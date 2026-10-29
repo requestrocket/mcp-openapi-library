@@ -1,0 +1,4049 @@
+openapi: 3.1.2
+info:
+  title: SendPulse Bulk Email API
+  version: 1.0.0
+  description: API for managing mailing lists, email campaigns, templates, and senders.
+  x-ai-description: >
+    The Bulk Email API is the core engine for marketing automation at
+    SendPulse.  It enables programmatic control over the entire email lifecycle.
+  license:
+    name: Apache 2.0
+    identifier: Apache-2.0
+servers:
+  - url: https://api.sendpulse.com
+    description: Production server
+security:
+  - apiKey: []
+  - oauth2: []
+tags:
+  - name: Mailing lists
+    description: Endpoints related to Mailing lists.
+  - name: Campaigns
+    description: Endpoints related to Campaigns.
+  - name: Templates
+    description: Endpoints related to Templates.
+  - name: Senders
+    description: Endpoints related to Senders.
+  - name: Email address
+    description: Endpoints related to Email address.
+  - name: Tags
+    description: Endpoints related to Tags.
+  - name: Blacklist
+    description: Endpoints related to Blacklist.
+  - name: Balance
+    description: Endpoints related to Balance.
+  - name: Webhooks
+    description: Endpoints related to Webhooks.
+paths:
+  /addressbooks:
+    post:
+      tags:
+        - Mailing lists
+      summary: Create a mailing list
+      operationId: createMailingList
+      description: Create a new mailing list (address book).
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: |
+        This endpoint initializes a primary data container for subscribers.
+      x-ai-reasoning-instructions:
+        - >-
+          Check if a list with a similar name already exists to avoid
+          duplication.
+        - Advise descriptive naming conventions (e.g., 'Q1_LeadGen_Campaign').
+        - Verify account limits before creation.
+      x-ai-responding-instructions:
+        - Confirm the creation and state the new Mailing List ID.
+        - Prompt the user to add variables or import contacts next.
+      x-ai-suggestions:
+        - Newsletter_Subscribers_2024
+        - VIP_Customers_Tier1
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bookName
+              properties:
+                bookName:
+                  type: string
+                  description: Mailing list name
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                bookName.required:
+                  summary: bookName.required
+                  value:
+                    message: Argument bookName missing
+                    error_code: 422
+                bookName.string:
+                  summary: bookName.string
+                  value:
+                    message: Argument bookName must be string
+                    error_code: 422
+                bookName.exists:
+                  summary: bookName.exists
+                  value:
+                    message: Name already in use
+                    error_code: 203
+    get:
+      tags:
+        - Mailing lists
+      summary: Get a list of mailing lists
+      operationId: getMailingLists
+      description: Retrieve all mailing lists.
+      x-ai-role: data_analyst
+      x-ai-description: |
+        Provides an overview of the account's subscriber infrastructure.
+      x-ai-reasoning-instructions:
+        - Use limit and offset if the user has many lists.
+        - Analyze the active vs. inactive subscriber ratios.
+        - Identify unused lists for potential cleanup.
+      x-ai-responding-instructions:
+        - Summarize the total number of lists.
+        - Highlight lists with the most active subscribers.
+      x-ai-suggestions:
+        - 'limit: 20'
+        - 'offset: 0'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: limit
+          in: query
+          description: Number of records
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+            example: 10
+        - name: offset
+          in: query
+          description: Offset (first record to be displayed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: List of mailing lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailingList'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                limit.integer:
+                  summary: limit.integer
+                  value:
+                    message: Argument limit must be integer
+                    error_code: 422
+                limit.min:
+                  summary: limit.min
+                  value:
+                    message: Argument limit must be at least 1
+                    error_code: 422
+                limit.max:
+                  summary: limit.max
+                  value:
+                    message: Argument limit may not be greater than 100
+                    error_code: 422
+                offset.integer:
+                  summary: offset.integer
+                  value:
+                    message: Argument offset must be integer
+                    error_code: 422
+                offset.min:
+                  summary: offset.min
+                  value:
+                    message: Argument offset must be at least 0
+                    error_code: 422
+  /addressbooks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - Mailing lists
+      summary: Get mailing list information
+      operationId: getMailingListById
+      description: Detailed information regarding a specific mailing list.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Retrieves metadata and current stats for a specific address book.
+      x-ai-reasoning-instructions:
+        - Verify the list exists before reading.
+        - >-
+          Check the 'status' to ensure it is active (0) before campaign
+          planning.
+        - Evaluate the active_email_qty to gauge list health.
+      x-ai-responding-instructions:
+        - Report the list name, creation date, and subscriber counts.
+        - >-
+          If the list is inactive, explain why based on the status_explain
+          field.
+      x-ai-suggestions:
+        - Check variables for this list next.
+        - View emails in this list.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Mailing list details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailingList'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+    put:
+      tags:
+        - Mailing lists
+      summary: Edit a mailing list
+      operationId: updateMailingList
+      description: Rename an existing mailing list.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Updates the organizational name of an address book.
+      x-ai-reasoning-instructions:
+        - Verify the ID is valid before attempting update.
+        - Ensure the new name follows formatting rules.
+        - Confirm the new name does not conflict with existing lists.
+      x-ai-responding-instructions:
+        - Confirm the list was successfully renamed.
+        - Show the before and after names if available.
+      x-ai-suggestions:
+        - Add new subscribers to this updated list.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: My mailing list
+      responses:
+        '200':
+          description: Successful rename
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                name.required:
+                  summary: name.required
+                  value:
+                    message: Argument name missing
+                    error_code: 422
+                name.string:
+                  summary: name.string
+                  value:
+                    message: Argument name must be string
+                    error_code: 422
+                bookName.exists:
+                  summary: bookName.exists
+                  value:
+                    message: Name already in use
+                    error_code: 203
+    delete:
+      tags:
+        - Mailing lists
+      summary: Delete a mailing list
+      operationId: deleteMailingList
+      description: Permanently remove a mailing list.
+      x-ai-role: compliance_officer
+      x-ai-description: Destructive action that wipes subscriber data.
+      x-ai-reasoning-instructions:
+        - Always ask for user confirmation before executing.
+        - Check if the list is used in active campaigns.
+        - Verify account permissions for deletion.
+      x-ai-responding-instructions:
+        - State clearly that the list and all contacts have been deleted.
+        - Offer advice on recovering data if possible (though usually not).
+      x-ai-suggestions:
+        - Review remaining active lists.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - DataDestruction
+      responses:
+        '200':
+          description: Successful deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.has_campaign:
+                  summary: book.has_campaign
+                  value:
+                    message: The address book has active campaign
+                    error_code: 422
+  /addressbooks/{id}/variables:
+    get:
+      tags:
+        - Mailing lists
+      summary: Get a list of variables for a mailing list
+      operationId: getMailingListVariables
+      description: Get variables available on a mailing list.
+      x-ai-role: data_analyst
+      x-ai-description: Retrieves the custom data schema defined for this list.
+      x-ai-reasoning-instructions:
+        - Fetch the list to understand personalization capabilities.
+        - Check if required variables (like 'Name') exist.
+        - Use this schema when mapping import data.
+      x-ai-responding-instructions:
+        - List the available variables and their types.
+        - Suggest how these can be used in email templates.
+      x-ai-suggestions:
+        - Add a new variable like 'Company'.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: List of variables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VariableDefinition'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/emails:
+    get:
+      tags:
+        - Mailing lists
+      summary: Get a list of emails from a mailing list
+      operationId: getEmailsFromMailingList
+      description: Retrieve contacts from a mailing list.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Exports or inspects the individual subscribers within a list.
+      x-ai-reasoning-instructions:
+        - Apply limit and offset to handle large lists safely.
+        - Filter by 'active' or 'not_active' to focus on deliverable contacts.
+        - Monitor the status codes to gauge list quality.
+      x-ai-responding-instructions:
+        - Present a sample of the contacts retrieved.
+        - Summarize the statuses found in the results.
+      x-ai-suggestions:
+        - Clean up inactive contacts.
+        - Export to CSV.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+            - PIIDisplay
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: not_active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of email contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailContact'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                limit.integer:
+                  summary: limit.integer
+                  value:
+                    message: Argument limit must be integer
+                    error_code: 422
+                limit.min:
+                  summary: limit.min
+                  value:
+                    message: Argument limit must be at least 1
+                    error_code: 422
+                limit.max:
+                  summary: limit.max
+                  value:
+                    message: Argument limit may not be greater than 100
+                    error_code: 422
+                offset.integer:
+                  summary: offset.integer
+                  value:
+                    message: Argument offset must be integer
+                    error_code: 422
+                offset.min:
+                  summary: offset.min
+                  value:
+                    message: Argument offset must be at least 0
+                    error_code: 422
+                order.string:
+                  summary: order.string
+                  value:
+                    message: Argument order must be string
+                    error_code: 422
+                order.in:
+                  summary: order.in
+                  value:
+                    message: Argument order is invalid
+                    error_code: 422
+                active.boolean:
+                  summary: active.boolean
+                  value:
+                    message: Argument active is invalid
+                    error_code: 422
+                not_active.boolean:
+                  summary: not_active.boolean
+                  value:
+                    message: Argument not_active is invalid
+                    error_code: 422
+    post:
+      tags:
+        - Mailing lists
+      summary: Add emails to a mailing list
+      operationId: addEmailsToMailingList
+      description: Add contacts using single or double opt-in.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Primary method for populating lists. Supports bulk addition.
+      x-ai-reasoning-instructions:
+        - Validate email formats before sending payload.
+        - If using double opt-in, ensure sender_email is authorized.
+        - Map variables correctly according to the list schema.
+      x-ai-responding-instructions:
+        - Confirm how many contacts were added.
+        - Explain that DOI contacts will remain pending until confirmed.
+      x-ai-suggestions:
+        - Check list total to verify addition.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+            - PIIDataHandling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AddEmailsSingleOptIn'
+                - $ref: '#/components/schemas/AddEmailsDoubleOptIn'
+      responses:
+        '200':
+          description: Successful addition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                tariff.exception:
+                  summary: tariff.exception
+                  value:
+                    message: Access denied! Please change your tariff plan
+                    error_code: 3030303030
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emails.required:
+                  summary: emails.required
+                  value:
+                    message: Argument emails missing
+                    error_code: 422
+                emails.array:
+                  summary: emails.array
+                  value:
+                    message: Argument emails must be array
+                    error_code: 422
+                emails.*.array:
+                  summary: emails.*.array
+                  value:
+                    message: Argument emails is invalid
+                    error_code: 422
+                emails.*.email.string:
+                  summary: emails.*.email.string
+                  value:
+                    message: Argument email is invalid
+                    error_code: 422
+                emails.*.variables.array:
+                  summary: emails.*.variables.array
+                  value:
+                    message: Argument emails.*.variables is invalid
+                    error_code: 422
+                confirmation.string:
+                  summary: confirmation.string
+                  value:
+                    message: Argument confirmation must be string
+                    error_code: 422
+                confirmation.in:
+                  summary: confirmation.in
+                  value:
+                    message: Argument confirmation is invalid
+                    error_code: 422
+                sender_email.required_with:
+                  summary: sender_email.required_with
+                  value:
+                    message: Argument sender_email missing
+                    error_code: 422
+                sender_email.email:
+                  summary: sender_email.email
+                  value:
+                    message: Argument sender_email is invalid
+                    error_code: 422
+                sender_email.not_found:
+                  summary: sender_email.not_found
+                  value:
+                    message: Sender not found
+                    error_code: 1003
+                template_id.string:
+                  summary: template_id.string
+                  value:
+                    message: Argument template_id is invalid
+                    error_code: 422
+                message_lang.string:
+                  summary: message_lang.string
+                  value:
+                    message: Argument message_lang is invalid
+                    error_code: 422
+                disable_webhook.boolean:
+                  summary: disable_webhook.boolean
+                  value:
+                    message: Argument disable_webhook must be boolean
+                    error_code: 422
+                dont_update.boolean:
+                  summary: dont_update.boolean
+                  value:
+                    message: Argument dont_update must be boolean
+                    error_code: 422
+                check_emails.boolean:
+                  summary: check_emails.boolean
+                  value:
+                    message: Argument check_emails must be boolean
+                    error_code: 422
+                tags.array:
+                  summary: tags.array
+                  value:
+                    message: Argument tags must be array
+                    error_code: 422
+                tags.*.integer:
+                  summary: tags.*.integer
+                  value:
+                    message: Argument tags is invalid
+                    error_code: 422
+    delete:
+      tags:
+        - Mailing lists
+      summary: Delete emails from a mailing list
+      operationId: deleteEmailsFromMailingList
+      description: Remove specific email addresses.
+      x-ai-role: compliance_officer
+      x-ai-description: Removes subscribers from a specific list.
+      x-ai-reasoning-instructions:
+        - Ensure the array does not exceed 100 emails per request.
+        - Verify the emails actually exist in the list first.
+        - Confirm with the user before proceeding.
+      x-ai-responding-instructions:
+        - Confirm the exact number of emails removed.
+        - Advise on global deletion if the user wants them entirely gone.
+      x-ai-suggestions:
+        - Use global delete instead if necessary.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - DataDestruction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+              properties:
+                emails:
+                  type: array
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: email
+                    example: test@test.com
+      responses:
+        '200':
+          description: Successful deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                email.limit:
+                  summary: email.limit
+                  value:
+                    message: 'Limit is exceeded. Max count: 100'
+                    error_code: 422
+                bookName.string:
+                  summary: bookName.string
+                  value:
+                    message: Argument bookName must be string
+                    error_code: 422
+                emails.empty:
+                  summary: emails.empty
+                  value:
+                    message: No emails
+                    error_code: 303
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/emails/total:
+    get:
+      tags:
+        - Mailing lists
+      summary: Get the total number of contacts
+      operationId: getEmailsTotalCount
+      description: Returns the total count of emails in a list.
+      x-ai-role: data_analyst
+      x-ai-description: Quickly check the size of an address book.
+      x-ai-reasoning-instructions:
+        - Use this for high-level stats without downloading PI data.
+        - Calculate pagination needs based on this total.
+        - Monitor list growth over time.
+      x-ai-responding-instructions:
+        - State the total subscriber count clearly.
+        - Compare it to account limits if relevant.
+      x-ai-suggestions:
+        - Download the list details.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: active
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Total count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/emails/unsubscribe:
+    post:
+      tags:
+        - Mailing lists
+      summary: Unsubscribe contacts from a mailing list
+      operationId: unsubscribeEmailsFromMailingList
+      description: >-
+        Moves specified email addresses to the unsubscribed state within a given
+        list.
+      x-ai-role: compliance_officer
+      x-ai-description: >-
+        Marks contacts as unsubscribed in a specific list without deleting them
+        globally. Use when honoring list-level opt-out requests.
+      x-ai-reasoning-instructions:
+        - Confirm the list exists before sending the request.
+        - Validate all email addresses are present in the list.
+        - Limit to 100 emails per request; batch if needed.
+        - Prefer this over global delete to preserve historical data.
+      x-ai-responding-instructions:
+        - Confirm how many contacts were unsubscribed.
+        - Advise the user to verify via GET /addressbooks/{id}/emails if needed.
+      x-ai-suggestions:
+        - >-
+          Check remaining active contacts via GET
+          /addressbooks/{id}/emails/total.
+        - Use global blacklist for permanent suppression.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+            - PIIDataHandling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+              properties:
+                emails:
+                  type: array
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: email
+                    example: user@example.com
+      responses:
+        '200':
+          description: Contacts successfully unsubscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emails.required:
+                  summary: emails.required
+                  value:
+                    message: Argument emails missing
+                    error_code: 422
+                emails.array:
+                  summary: emails.array
+                  value:
+                    message: Argument emails is invalid
+                    error_code: 422
+                emails.max:
+                  summary: emails.max
+                  value:
+                    message: Argument emails may not have more than 100 items
+                    error_code: 422
+                emails.*.string:
+                  summary: emails.*.string
+                  value:
+                    message: Argument emails is invalid
+                    error_code: 422
+                emails.active:
+                  summary: emails.active
+                  value:
+                    message: Active emails not found
+                    error_code: 422
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/emails/variable:
+    post:
+      tags:
+        - Email address
+      summary: Update variables for a contact in a mailing list
+      operationId: updateContactVariables
+      description: >-
+        Updates custom variable values for a specific email address within a
+        mailing list.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: >-
+        Modifies personalization data for a subscriber in a given list. Use when
+        contact attributes change (e.g. name, city, preferences) and need to
+        stay in sync.
+      x-ai-reasoning-instructions:
+        - Verify the email exists in the specified list before updating.
+        - Ensure variable names match the schema defined for this list.
+        - Send only changed variables to avoid overwriting with empty values.
+      x-ai-responding-instructions:
+        - Confirm the update was successful.
+        - List which variables were changed.
+      x-ai-suggestions:
+        - Fetch updated contact info via GET /addressbooks/{id}/emails/{email}.
+        - Trigger a personalized campaign after updating key variables.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+            - PIIDataHandling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - variables
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                variables:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - value
+                    properties:
+                      name:
+                        type: string
+                        example: FirstName
+                      value:
+                        type: string
+                        example: John
+      responses:
+        '200':
+          description: Variables successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                email.required:
+                  summary: email.required
+                  value:
+                    message: Argument email missing
+                    error_code: 422
+                email.email:
+                  summary: email.email
+                  value:
+                    message: Argument email is invalid
+                    error_code: 422
+                email.not_found:
+                  summary: email.not_found
+                  value:
+                    message: Email address not found
+                    error_code: 502
+                variables.required:
+                  summary: variables.required
+                  value:
+                    message: Argument variables missing
+                    error_code: 422
+                variables.array:
+                  summary: variables.array
+                  value:
+                    message: Argument variables is invalid
+                    error_code: 422
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/variables/{variableName}/{searchValue}:
+    get:
+      tags:
+        - Mailing lists
+      summary: Get contacts by variable
+      operationId: getContactsByVariable
+      description: Find all contacts matching a specific variable value.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Search tool for finding specific segments.
+      x-ai-reasoning-instructions:
+        - Check if the variable name is valid for this list.
+        - Ensure the search value matches the variable type.
+        - Handle empty results gracefully.
+      x-ai-responding-instructions:
+        - Display the matching contacts.
+        - Suggest creating a segment based on this variable if used often.
+      x-ai-suggestions:
+        - Send a targeted campaign to these results.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: List of matching contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailContactBasic'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+                variable.not_found:
+                  summary: variable.not_found
+                  value:
+                    message: Variable not found
+                    error_code: 299
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                variable.error:
+                  summary: variable.error
+                  value:
+                    message: Variable name is invalid
+                    error_code: 422
+                variable.date.value:
+                  summary: variable.date.value
+                  value:
+                    message: Variable value wrong format
+                    error_code: 422
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: variableName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: searchValue
+        in: path
+        required: true
+        schema:
+          type: string
+  /addressbooks/{id}/phone:
+    put:
+      tags:
+        - Mailing lists
+      summary: Change a phone number for a contact
+      operationId: updateContactPhone
+      description: Update the 'Phone' variable for a subscriber.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Updates the system 'Phone' variable.
+      x-ai-reasoning-instructions:
+        - Format the phone number to international standards.
+        - Ensure the email address exists in the list.
+        - Verify successful response.
+      x-ai-responding-instructions:
+        - Confirm the phone number was updated.
+        - Suggest sending an SMS campaign if applicable.
+      x-ai-suggestions:
+        - Update other variables.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - phone
+              properties:
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                phone.error:
+                  summary: phone.error
+                  value:
+                    message: Phone is not valid
+                    error_code: 422
+                email.error:
+                  summary: email.error
+                  value:
+                    message: Email is not valid
+                    error_code: 17
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/cost:
+    get:
+      tags:
+        - Mailing lists
+      summary: Get campaign cost
+      operationId: getCampaignCostByList
+      description: Calculate the cost of sending to this list.
+      x-ai-role: billing_specialist
+      x-ai-description: Financial cost calculation based on current tariff.
+      x-ai-reasoning-instructions:
+        - Check if the account has enough balance (result=true).
+        - Analyze the overdraft prices if limits are exceeded.
+        - Warn the user before they schedule large campaigns.
+      x-ai-responding-instructions:
+        - Provide the total estimated cost in the appropriate currency.
+        - Advise on top-ups if the balance is insufficient.
+      x-ai-suggestions:
+        - Proceed with creating the campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Cost calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignCost'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.empty:
+                  summary: book.empty
+                  value:
+                    message: Addressbook is empty
+                    error_code: 211
+                tariff.ended:
+                  summary: tariff.ended
+                  value:
+                    message: Your tariff plan ended
+                    error_code: 422
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /campaigns:
+    post:
+      tags:
+        - Campaigns
+      summary: Create a campaign
+      operationId: createCampaign
+      description: >-
+        Create and send or schedule a campaign. One of 'body' or 'template_id'
+        is required. One of 'list_id' or 'segment_id' is required.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: >-
+        The primary engine for launching marketing broadcasts. This endpoint
+        allows for direct HTML injection, template usage, and sophisticated
+        segmentation. It supports both immediate sends and future scheduling
+        with dynamic list updates.
+      x-ai-reasoning-instructions:
+        - Validate that either `body` or `template_id` is present.
+        - Validate that either `list_id` or `segment_id` is present.
+        - >-
+          If `send_date` is provided, ensure it is in `Y-m-d H:i:s` format and
+          in the future.
+        - Check if `sender_email` is a pre-verified sender for the account.
+        - >-
+          For large lists, advise calculating cost using
+          `/addressbooks/{id}/cost` first.
+        - >-
+          If `is_test` is true, remind the user that only one `list_id` can be
+          used.
+      x-ai-responding-instructions:
+        - Provide the new Campaign ID and its initial task status.
+        - >-
+          Clearly state if the campaign is a draft (status 26) or entering the
+          send queue (status 13).
+        - If scheduled, confirm the exact time it will be sent.
+        - Highlight the estimated recipient count if provided in the response.
+      x-ai-suggestions:
+        - Monitor campaign statistics using `/campaigns/{id}`.
+        - Check referral statistics with `/campaigns/{id}/referrals`.
+        - 'Send a test campaign first by setting `is_test: true`.'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+            - SensitiveAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignCreateRequest'
+      responses:
+        '200':
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignCreateResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    get:
+      tags:
+        - Campaigns
+      summary: Get a list of campaigns
+      operationId: getCampaigns
+      description: Retrieve history and status of all campaigns.
+      x-ai-role: data_analyst
+      x-ai-description: Retrieves the history and status of all email campaigns.
+      x-ai-reasoning-instructions:
+        - Use pagination for accounts with high volume.
+        - Filter by status to find drafts or pending campaigns.
+        - Sort by date descending to see recent activity.
+      x-ai-responding-instructions:
+        - Summarize recent campaigns and their statuses.
+        - Highlight any blocked or failed campaigns.
+      x-ai-suggestions:
+        - View details for a specific campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: status
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+        - name: planed
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CampaignSummary'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /campaigns/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - Campaigns
+      summary: Get campaign information
+      operationId: getCampaignById
+      description: Get detailed stats for a specific campaign.
+      x-ai-role: data_analyst
+      x-ai-description: Provides full performance metrics, including opens and clicks.
+      x-ai-reasoning-instructions:
+        - Check if the campaign status indicates it has finished sending.
+        - Calculate open and click-through rates from the statistics block.
+        - Identify high bounce or unsubscribe rates.
+      x-ai-responding-instructions:
+        - Provide a clear summary of delivery, opens, and clicks.
+        - Diagnose any deliverability issues found in the error logs.
+      x-ai-suggestions:
+        - Check country statistics.
+        - Check referral statistics.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Detailed campaign stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignDetails'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    patch:
+      tags:
+        - Campaigns
+      summary: Edit scheduled campaign
+      operationId: updateCampaign
+      description: Update a pending campaign.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Allows corrections to pending campaigns.
+      x-ai-reasoning-instructions:
+        - Verify the campaign is still in a scheduled/draft state.
+        - Ensure base64 encoding if the body is updated.
+        - Confirm new send_date is in the future.
+      x-ai-responding-instructions:
+        - Confirm the updates were saved successfully.
+        - State the new scheduled time if changed.
+      x-ai-suggestions:
+        - Review the campaign details again.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignUpdateRequest'
+      responses:
+        '200':
+          description: Campaign updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrueWithId'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Campaigns
+      summary: Cancel a campaign
+      operationId: cancelCampaign
+      description: Stops a pending or processing campaign.
+      x-ai-role: marketing_automation_specialist
+      x-ai-description: Cancels campaigns before they are fully sent.
+      x-ai-reasoning-instructions:
+        - Check campaign status; already sent campaigns cannot be cancelled.
+        - Act quickly if the status is 'processing'.
+        - Verify the result is true.
+      x-ai-responding-instructions:
+        - Confirm the campaign has been stopped.
+        - Explain that partially sent emails cannot be recalled.
+      x-ai-suggestions:
+        - Create a new corrected campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      responses:
+        '200':
+          description: Campaign cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /campaigns/{id}/countries:
+    get:
+      tags:
+        - Campaigns
+      summary: Get country statistics
+      operationId: getCampaignCountryStats
+      description: Geographic breakdown of email opens.
+      x-ai-role: data_analyst
+      x-ai-description: Provides geographic breakdown of engagement.
+      x-ai-reasoning-instructions:
+        - Sort the data to find the top performing countries.
+        - Correlate with sending times to optimize future schedules.
+        - Handle empty responses for un-opened campaigns.
+      x-ai-responding-instructions:
+        - List the top 3-5 countries by open volume.
+        - Suggest localization strategies if audience is diverse.
+      x-ai-suggestions:
+        - Segment future campaigns by top regions.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Country stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /campaigns/{id}/referrals:
+    get:
+      tags:
+        - Campaigns
+      summary: Get referrals statistics
+      operationId: getCampaignReferralStats
+      description: Breakdown of link clicks.
+      x-ai-role: data_analyst
+      x-ai-description: Analyzes which links performed best in a campaign.
+      x-ai-reasoning-instructions:
+        - Identify the most popular links.
+        - Check for broken links (0 clicks could indicate issues).
+        - Compare click distributions against CTAs.
+      x-ai-responding-instructions:
+        - Provide a sorted list of the most clicked URLs.
+        - Highlight the primary CTA performance.
+      x-ai-suggestions:
+        - Use these insights to design better templates.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Referral stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferralStat'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /addressbooks/{id}/campaigns:
+    get:
+      tags:
+        - Campaigns
+      summary: Get campaigns by mailing list
+      operationId: getCampaignsByList
+      description: Lists all campaigns targeting a specific list.
+      x-ai-role: data_analyst
+      x-ai-description: Traces the communication history for a specific audience segment.
+      x-ai-reasoning-instructions:
+        - Use this to check contact fatigue (too many campaigns).
+        - Evaluate the success trajectory of this specific list.
+        - Apply pagination as lists age and accumulate campaigns.
+      x-ai-responding-instructions:
+        - Summarize the recent campaigns sent to this list.
+        - Point out any trends in task statuses.
+      x-ai-suggestions:
+        - Check the detailed stats of the most recent campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CampaignByListSummary'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                book.not_found:
+                  summary: book.not_found
+                  value:
+                    message: Book not found
+                    error_code: 213
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /template:
+    post:
+      tags:
+        - Templates
+      summary: Create a template
+      operationId: createTemplate
+      description: Uploads HTML to create a reusable template.
+      x-ai-role: email_designer
+      x-ai-description: Creates an asset that can be used across multiple campaigns.
+      x-ai-reasoning-instructions:
+        - Ensure the HTML body is properly base64 encoded.
+        - Verify language tags are correct.
+        - Suggest a descriptive name if omitted.
+      x-ai-responding-instructions:
+        - Confirm the template ID.
+        - Provide instructions on how to use it in a campaign.
+      x-ai-suggestions:
+        - Create a new campaign with this template ID.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                name:
+                  type: string
+                  example: My Template
+                body:
+                  type: string
+                  description: HTML encoded in base64
+                  example: >-
+                    PGlucHV0IHR5cGU9ImVtYWlsIiBuYW1lPSJlbWFpbCIgcmVxdWlyZWQKb25pbnZhbGlkPSJ0aGlzLnNldEN1c3RvbVZhbGlkaXR5KCfQn9C
+                lang:
+                  type: string
+                  enum:
+                    - en
+                    - ru
+                    - ua
+                    - tr
+                    - es
+                    - pt
+                  example: en
+      responses:
+        '200':
+          description: Template created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+                    example: true
+                  real_id:
+                    type: integer
+                    example: 1042220
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                body.required:
+                  summary: body.required
+                  value:
+                    message: Argument body missing
+                    error_code: 422
+                body.base64:
+                  summary: body.base64
+                  value:
+                    message: Argument body is invalid string
+                    error_code: 422
+                name.string:
+                  summary: name.string
+                  value:
+                    message: Argument name must be string
+                    error_code: 422
+                name.exists:
+                  summary: name.exists
+                  value:
+                    message: Template with such name already exist
+                    error_code: 573
+                lang.string:
+                  summary: lang.string
+                  value:
+                    message: Argument lang must be string
+                    error_code: 422
+  /template/edit/{id}:
+    post:
+      tags:
+        - Templates
+      summary: Edit a template
+      operationId: updateTemplate
+      description: Updates existing template HTML.
+      x-ai-role: email_designer
+      x-ai-description: Overwrites the HTML content of an existing template asset.
+      x-ai-reasoning-instructions:
+        - Verify the template ID exists.
+        - Ensure base64 encoding for the new body.
+        - Warn that this will affect future campaigns using this ID.
+      x-ai-responding-instructions:
+        - Confirm the template was updated successfully.
+        - Remind the user to test the template before sending.
+      x-ai-suggestions:
+        - Send a test campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - body
+              properties:
+                body:
+                  type: string
+                  description: HTML version of the email, encoded in base64
+                  example: PCFET0NUWVBFIGh0bWw+CjxodG1sPgo8a...
+                lang:
+                  type: string
+                  enum:
+                    - en
+                    - ru
+                    - ua
+                    - tr
+                    - es
+                    - pt
+      responses:
+        '200':
+          description: Template updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.not_found:
+                  summary: template.not_found
+                  value:
+                    message: Template not found
+                    error_code: 31
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.type:
+                  summary: template.type
+                  value:
+                    message: You cant edit templates from layout template editor
+                    error_code: 2900
+                body.required:
+                  summary: body.required
+                  value:
+                    message: Argument body missing
+                    error_code: 422
+                body.base64:
+                  summary: body.base64
+                  value:
+                    message: Argument body is invalid string
+                    error_code: 422
+                lang.string:
+                  summary: lang.string
+                  value:
+                    message: Argument lang must be string
+                    error_code: 422
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+  /template/{template_id}:
+    get:
+      tags:
+        - Templates
+      summary: Get information about a template
+      operationId: getTemplateById
+      description: Retrieves metadata for a template.
+      x-ai-role: email_designer
+      x-ai-description: Fetches preview URLs and structural info.
+      x-ai-reasoning-instructions:
+        - Extract the preview URL to show the user.
+        - Identify tags and categories to organize assets.
+        - Check the language setting.
+      x-ai-responding-instructions:
+        - Provide the template name, language, and a link to the preview.
+        - List its categories if any.
+      x-ai-suggestions:
+        - Use this template in a campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: owner
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - me
+              - sendpulse
+            default: me
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            example: en
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDetails'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.not_found:
+                  summary: template.not_found
+                  value:
+                    message: Template not found
+                    error_code: 290
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.processing:
+                  summary: template.processing
+                  value:
+                    message: This template in processing. You need to wait
+                    error_code: 2900
+    parameters:
+      - name: template_id
+        in: path
+        required: true
+        schema:
+          type: string
+  /template/slug/{name_slug}:
+    get:
+      tags:
+        - Templates
+      summary: Get a template by name slug
+      operationId: getTemplateBySlug
+      description: Retrieves template details using its unique name slug identifier.
+      x-ai-role: email_designer
+      x-ai-description: >-
+        Alternative lookup for templates when only the slug is known, instead of
+        the numeric ID. Useful for referencing templates by human-readable
+        identifiers.
+      x-ai-reasoning-instructions:
+        - Use this when the template ID is unknown but the slug is available.
+        - >-
+          Pass 'owner=sendpulse' to search system templates, 'owner=me' for user
+          templates.
+        - >-
+          Optionally filter by 'lang' to get a localized version of the
+          template.
+      x-ai-responding-instructions:
+        - Provide the template name, preview URL, and language.
+        - If not found, suggest listing all templates via GET /templates.
+      x-ai-suggestions:
+        - Use this template in a campaign.
+        - List all templates via GET /templates.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: owner
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - me
+              - sendpulse
+            default: me
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            example: en
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDetails'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.not_found:
+                  summary: template.not_found
+                  value:
+                    message: Template not found
+                    error_code: 290
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                template.processing:
+                  summary: template.processing
+                  value:
+                    message: This template in processing. You need to wait
+                    error_code: 2900
+    parameters:
+      - name: name_slug
+        in: path
+        required: true
+        schema:
+          type: string
+          example: my-welcome-template
+  /templates:
+    get:
+      tags:
+        - Templates
+      summary: Get a list of templates
+      operationId: getTemplates
+      description: Retrieves system or user templates.
+      x-ai-role: email_designer
+      x-ai-description: Lists available design assets.
+      x-ai-reasoning-instructions:
+        - Determine if the user wants their own ('me') or system templates.
+        - Format the output to highlight IDs needed for campaigns.
+        - Group by category if possible.
+      x-ai-responding-instructions:
+        - Provide a summary of the available templates.
+        - Share the real_id for the most recently created ones.
+      x-ai-suggestions:
+        - Get details for a specific template.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: owner
+          in: query
+          schema:
+            type: string
+            enum:
+              - me
+              - sendpulse
+            default: sendpulse
+        - name: only_active
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          description: Number of records
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+            example: 10
+        - name: offset
+          in: query
+          description: Offset (first record to be displayed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+            example: 0
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TemplateSummary'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /senders:
+    get:
+      tags:
+        - Senders
+      summary: Get a list of all senders
+      operationId: getSenders
+      description: Inspects authorized 'From' addresses.
+      x-ai-role: deliverability_expert
+      x-ai-description: Lists validated sender identities.
+      x-ai-reasoning-instructions:
+        - Check for 'Active' statuses.
+        - Identify senders that lack SMTP permission.
+        - Warn if no active senders are available.
+      x-ai-responding-instructions:
+        - List the approved sender emails and names.
+        - Point out any that require activation.
+      x-ai-suggestions:
+        - Add a new sender.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: List of senders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sender'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      tags:
+        - Senders
+      summary: Add a sender
+      operationId: addSender
+      description: Registers a new sender email address.
+      x-ai-role: deliverability_expert
+      x-ai-description: Initiates the sender verification process.
+      x-ai-reasoning-instructions:
+        - Verify email format.
+        - Ensure the domain is legitimate (avoid free domains if possible).
+        - Explain the activation workflow.
+      x-ai-responding-instructions:
+        - Confirm the sender was added.
+        - Instruct the user to retrieve the activation code.
+      x-ai-suggestions:
+        - Request activation code.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Sender added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Senders
+      summary: Delete a sender
+      operationId: deleteSender
+      description: Removes an authorized sender.
+      x-ai-role: deliverability_expert
+      x-ai-description: Revokes sending privileges for an email.
+      x-ai-reasoning-instructions:
+        - Ensure the email exists in the account.
+        - Confirm the action.
+        - Warn about impact on scheduled campaigns using this sender.
+      x-ai-responding-instructions:
+        - Confirm the sender is permanently deleted.
+        - Suggest setting up an alternative sender if needed.
+      x-ai-suggestions:
+        - List remaining senders.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Sender deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /senders/{email}/code:
+    parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Senders
+      summary: Request activation code
+      operationId: requestSenderActivationCode
+      description: Triggers an activation email.
+      x-ai-role: deliverability_expert
+      x-ai-description: Resends the verification email.
+      x-ai-reasoning-instructions:
+        - Ensure the sender email is currently unverified.
+        - Inform the user to check their inbox.
+        - Handle rate limits (15 min wait time).
+      x-ai-responding-instructions:
+        - Confirm the code has been dispatched.
+        - Instruct the user to provide the code to the activation endpoint.
+      x-ai-suggestions:
+        - Activate sender with code.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      responses:
+        '200':
+          description: Code sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderActivationResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      tags:
+        - Senders
+      summary: Activate a sender
+      operationId: activateSender
+      description: Verifies the sender using the code.
+      x-ai-role: deliverability_expert
+      x-ai-description: Completes the verification loop.
+      x-ai-reasoning-instructions:
+        - Ensure the code matches exactly.
+        - Verify the email address transitions to 'Active'.
+        - Celebrate the new capability to send.
+      x-ai-responding-instructions:
+        - Confirm successful activation.
+        - State that the email is now ready for campaigns.
+      x-ai-suggestions:
+        - Create a campaign.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Sender activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SenderActivationResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /emails/{email}:
+    parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Email address
+      summary: Get general info for an email
+      operationId: getEmailInfo
+      description: Finds which address books this email belongs to.
+      x-ai-role: data_analyst
+      x-ai-description: Cross-references a single subscriber across the entire account.
+      x-ai-reasoning-instructions:
+        - Identify all lists where the subscriber is active.
+        - Extract specific variables assigned in different books.
+        - Check for global unsubscribes or blocks.
+      x-ai-responding-instructions:
+        - List the address books and statuses for this email.
+        - Summarize custom data tied to this user.
+      x-ai-suggestions:
+        - Get detailed history for this email.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+            - PIIDisplay
+      responses:
+        '200':
+          description: Email info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailAcrossBooks'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Email address
+      summary: Delete email globally
+      operationId: deleteEmailGlobally
+      description: Wipes a subscriber from all lists.
+      x-ai-role: compliance_officer
+      x-ai-description: Fulfills right-to-be-forgotten requests (GDPR).
+      x-ai-reasoning-instructions:
+        - Ask for explicit confirmation as this affects all lists.
+        - Ensure the email format is valid.
+        - Verify it was removed from the entire ecosystem.
+      x-ai-responding-instructions:
+        - Confirm the global deletion is complete.
+        - Assure the user that the contact will no longer receive emails.
+      x-ai-suggestions:
+        - Verify with another GET call.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - DataDestruction
+      responses:
+        '200':
+          description: Deletion successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /emails/{email}/details:
+    get:
+      tags:
+        - Email address
+      summary: Get detailed info for an email
+      operationId: getEmailDetails
+      description: Retrieves list names, addition dates, and sources.
+      x-ai-role: data_analyst
+      x-ai-description: Audits the acquisition history of a subscriber.
+      x-ai-reasoning-instructions:
+        - Analyze the 'source' field to understand lead generation performance.
+        - Review 'add_date' to see subscriber tenure.
+        - Match list_id against known campaigns.
+      x-ai-responding-instructions:
+        - Provide a timeline of when and how the user was added.
+        - Highlight the primary acquisition source.
+      x-ai-suggestions:
+        - Check campaign stats for this email.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Email details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmailDetails'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+  /emails:
+    post:
+      tags:
+        - Email address
+      summary: Get info for multiple emails
+      operationId: getMultipleEmailsInfo
+      description: Batch check for subscriber statuses.
+      x-ai-role: data_analyst
+      x-ai-description: Efficiently audits multiple users at once.
+      x-ai-reasoning-instructions:
+        - Construct the array of target emails carefully.
+        - Map the response structure (keyed by email) for easy reading.
+        - Identify overall trends (e.g., are they all in the same book?).
+      x-ai-responding-instructions:
+        - Summarize the statuses of the requested batch.
+        - Highlight any emails that are completely missing.
+      x-ai-suggestions:
+        - Add missing emails to a list.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+              properties:
+                emails:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Batch email info
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EmailInfoShort'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /emails/{email}/campaigns:
+    get:
+      tags:
+        - Email address
+      summary: Get email stats
+      operationId: getEmailCampaignStats
+      description: Analytics for a specific subscriber.
+      x-ai-role: data_analyst
+      x-ai-description: Calculates individual engagement scoring.
+      x-ai-reasoning-instructions:
+        - Review the ratio of sent vs open to determine engagement.
+        - Check the blacklist boolean to ensure deliverability.
+        - Identify which address books feed these campaigns.
+      x-ai-responding-instructions:
+        - Provide the subscriber's engagement metrics clearly.
+        - Warn if they are blacklisted.
+      x-ai-suggestions:
+        - Remove if highly unengaged.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Subscriber stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriberStats'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+  /campaigns/{id}/email/{email}:
+    get:
+      tags:
+        - Email address
+      summary: Get info for an email from a campaign
+      operationId: getEmailCampaignInfo
+      description: Checks exactly what happened to a specific email in a specific campaign.
+      x-ai-role: deliverability_expert
+      x-ai-description: Micro-level deliverability troubleshooting.
+      x-ai-reasoning-instructions:
+        - Investigate the detailed status to see if it bounced or was opened.
+        - Cross-reference with global status.
+        - Diagnose specific delivery failures.
+      x-ai-responding-instructions:
+        - >-
+          State the exact outcome for this user (e.g., 'Delivered but not
+          opened').
+        - Explain any error codes found.
+      x-ai-suggestions:
+        - Check global stats for this email.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Detailed delivery info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent_date:
+                    type: string
+                  global_status:
+                    type: integer
+                  global_status_explain:
+                    type: string
+                  detail_status:
+                    type: integer
+                  detail_status_explain:
+                    type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+  /addressbooks/{id}/emails/{email}:
+    get:
+      tags:
+        - Email address
+      summary: Get info for an email from a mailing list
+      operationId: getEmailFromList
+      description: Retrieves exact variables and status in one list.
+      x-ai-role: data_analyst
+      x-ai-description: Specific lookup for a user's data within a designated segment.
+      x-ai-reasoning-instructions:
+        - Verify the variables hold expected data.
+        - Check if the status is active.
+        - Extract phone number if present.
+      x-ai-responding-instructions:
+        - >-
+          List the variables and values associated with this contact in this
+          list.
+        - Confirm their subscription status.
+      x-ai-suggestions:
+        - Update the phone number.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters: []
+      responses:
+        '200':
+          description: Contact list info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  abook_id:
+                    type: string
+                  phone:
+                    type: string
+                  status:
+                    type: integer
+                  status_explain:
+                    type: string
+                  variables:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        type:
+                          type: string
+                        value:
+                          type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+  /emails/campaigns:
+    post:
+      tags:
+        - Email address
+      summary: Get stats for multiple emails
+      operationId: getMultipleEmailsCampaignStats
+      description: Batch fetch engagement stats.
+      x-ai-role: data_analyst
+      x-ai-description: Bulk analytics query.
+      x-ai-reasoning-instructions:
+        - Assemble the batch request up to limits.
+        - Compare metrics across the batch to find top engagers.
+        - Map the complex response correctly.
+      x-ai-responding-instructions:
+        - Provide an aggregated view or highlight extremes in the batch.
+        - Summarize total sends vs opens.
+      x-ai-suggestions:
+        - Segment based on these metrics.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+              properties:
+                emails:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Batch stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/SubscriberStats'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags:
+    get:
+      tags:
+        - Tags
+      summary: Get a list of tags
+      operationId: getTags
+      description: Retrieve all created tags for the account.
+      x-ai-role: segment_analyst
+      x-ai-description: >-
+        This endpoint provides access to the tagging system used for subscriber
+        segmentation.
+      x-ai-reasoning-instructions:
+        - Fetch all tags to understand the available labels for contacts.
+        - Use tag IDs for pinning/unpinning operations.
+      x-ai-responding-instructions:
+        - List the names and IDs of the tags.
+        - Mention that tags are only available on Pro plans and above.
+      x-ai-suggestions:
+        - Create a new tag for high-value leads.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      tags:
+        - Tags
+      summary: Create a tag
+      operationId: createTag
+      description: Create a new tag with the specified name and color.
+      x-ai-role: segment_analyst
+      x-ai-description: Create a new organizational tag for better subscriber management.
+      x-ai-reasoning-instructions:
+        - Ensure the tag name is descriptive.
+        - Use a hex color code for the tag's visual representation.
+      x-ai-responding-instructions:
+        - >-
+          Confirm that the request was sent to the queue and provide the
+          queue_id.
+      x-ai-suggestions:
+        - '{"name": "VIP", "color": "#FF0000"}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreateRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    put:
+      tags:
+        - Tags
+      summary: Update a tag
+      operationId: updateTag
+      description: Update an existing tag by its ID.
+      x-ai-role: segment_analyst
+      x-ai-description: Modify the name or color of an existing tag.
+      x-ai-reasoning-instructions:
+        - Verify the tag ID exists before updating.
+        - Provide both the updated name and color.
+      x-ai-responding-instructions:
+        - Confirm that the update request was sent to the queue.
+      x-ai-suggestions:
+        - '{"name": "UpdatedVIP", "color": "#00FF00"}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagUpdateRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Tags
+      summary: Delete a tag
+      operationId: deleteTag
+      description: Remove a specific tag by its ID.
+      x-ai-role: segment_analyst
+      x-ai-description: Permanently delete a tag from the account.
+      x-ai-reasoning-instructions:
+        - Ensure you have the correct tag ID before deletion.
+        - >-
+          Be aware that deleting a tag will remove it from all assigned
+          contacts.
+      x-ai-responding-instructions:
+        - Confirm that the deletion request was sent to the queue.
+      x-ai-suggestions:
+        - List all tags to verify deletion.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - DataDestruction
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags/pin/email:
+    post:
+      tags:
+        - Tags
+      summary: Assign tag to email
+      operationId: pinTagToEmail
+      description: Assign one or more tags to a specific email address.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Apply organizational labels to a subscriber's email.
+      x-ai-reasoning-instructions:
+        - Ensure the email address is valid and exists in your lists.
+        - Provide an array of tag IDs to assign.
+      x-ai-responding-instructions:
+        - Confirm that the assignment request was sent to the queue.
+      x-ai-suggestions:
+        - '{"email": "test@example.com", "tags": [123, 456]}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagPinUnpinEmailRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags/pin/phone:
+    post:
+      tags:
+        - Tags
+      summary: Assign tag to phone
+      operationId: pinTagToPhone
+      description: Assign one or more tags to a specific phone number.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Apply organizational labels to a subscriber's phone number.
+      x-ai-reasoning-instructions:
+        - Ensure the phone number is correctly formatted.
+        - Provide an array of tag IDs to assign.
+      x-ai-responding-instructions:
+        - Confirm that the assignment request was sent to the queue.
+      x-ai-suggestions:
+        - '{"phone": "1234567890", "tags": [123, 456]}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagPinUnpinPhoneRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags/unpin/email:
+    post:
+      tags:
+        - Tags
+      summary: Unassign tag from email
+      operationId: unpinTagFromEmail
+      description: Remove one or more tags from a specific email address.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Remove organizational labels from a subscriber's email.
+      x-ai-reasoning-instructions:
+        - Verify the tags were previously assigned to this email.
+        - Provide the tag IDs to remove.
+      x-ai-responding-instructions:
+        - Confirm that the removal request was sent to the queue.
+      x-ai-suggestions:
+        - '{"email": "test@example.com", "tags": [123]}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagPinUnpinEmailRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /tags/unpin/phone:
+    post:
+      tags:
+        - Tags
+      summary: Unassign tag from phone
+      operationId: unpinTagFromPhone
+      description: Remove one or more tags from a specific phone number.
+      x-ai-role: lead_generation_specialist
+      x-ai-description: Remove organizational labels from a subscriber's phone number.
+      x-ai-reasoning-instructions:
+        - Ensure the phone number matches the contact's record.
+        - Provide the tag IDs to remove.
+      x-ai-responding-instructions:
+        - Confirm that the removal request was sent to the queue.
+      x-ai-suggestions:
+        - '{"phone": "1234567890", "tags": [123]}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagPinUnpinPhoneRequest'
+      responses:
+        '200':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagQueueResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /blacklist:
+    get:
+      tags:
+        - Blacklist
+      summary: Get blacklist
+      operationId: getBlacklist
+      description: Retrieve the list of blacklisted email addresses.
+      x-ai-role: compliance_officer
+      x-ai-description: >-
+        Review the list of contacts who are excluded from your mailing
+        activities.
+      x-ai-reasoning-instructions:
+        - Use this list to ensure you are not sending to unwanted contacts.
+        - Monitor the size and content of your blacklist for hygiene.
+      x-ai-responding-instructions:
+        - Provide the array of blacklisted email addresses.
+        - >-
+          Explain that these contacts will not receive campaigns even if they
+          are in mailing lists.
+      x-ai-suggestions:
+        - Remove a contact from the blacklist if needed.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Blacklist retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      tags:
+        - Blacklist
+      summary: Add to blacklist
+      operationId: addToBlacklist
+      description: Add one or more email addresses to the blacklist.
+      x-ai-role: compliance_officer
+      x-ai-description: Prevent specific emails from receiving any further communications.
+      x-ai-reasoning-instructions:
+        - Comma-separate multiple emails and base64 encode the entire string.
+        - Add an optional comment for record-keeping.
+      x-ai-responding-instructions:
+        - Confirm that the emails were successfully added to the blacklist.
+      x-ai-suggestions:
+        - >-
+          {"emails": "dXNlcjFAZXhhbXBsZS5jb20sdXNlcjJAZXhhbXBsZS5jb20=",
+          "comment": "Requested removal"}
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlacklistAddRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Blacklist
+      summary: Remove from blacklist
+      operationId: removeFromBlacklist
+      description: Remove email addresses from the account's blacklist.
+      x-ai-role: compliance_officer
+      x-ai-description: Re-enable sending to previously blacklisted emails.
+      x-ai-reasoning-instructions:
+        - Comma-separate the emails and base64 encode the string.
+        - Verify the contacts actually wish to be removed before acting.
+      x-ai-responding-instructions:
+        - Confirm that the emails were removed from the blacklist.
+      x-ai-suggestions:
+        - '{"emails": "dXNlcjFAZXhhbXBsZS5jb20="}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlacklistDeleteRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultTrue'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /balance:
+    get:
+      tags:
+        - Balance
+      summary: Get balance
+      operationId: getBalance
+      description: Get overall account balance information.
+      x-ai-role: billing_specialist
+      x-ai-description: Check your current funds and currency settings.
+      x-ai-reasoning-instructions:
+        - Use this to monitor account credits before launching campaigns.
+        - Check if the balance is sufficient for the planned activity.
+      x-ai-responding-instructions:
+        - Report the current balance and its currency.
+      x-ai-suggestions:
+        - Get detailed balance information.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Balance info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /balance/{currency}:
+    get:
+      tags:
+        - Balance
+      summary: Get balance by currency
+      operationId: getBalanceByCurrency
+      description: Get account balance for a specific currency.
+      x-ai-role: billing_specialist
+      x-ai-description: Check balance in a specific currency (e.g., USD, EUR).
+      x-ai-reasoning-instructions:
+        - Specify the 3-letter currency code in the URL.
+        - Ensure the requested currency is supported by your account.
+      x-ai-responding-instructions:
+        - Provide the balance amount in the requested currency.
+      x-ai-suggestions:
+        - /balance/USD
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      parameters:
+        - name: currency
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Balance info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /user/balance/detail:
+    get:
+      tags:
+        - Balance
+      summary: Get detailed balance
+      operationId: getDetailedBalance
+      description: Get deep dive into balance, tariffs, and limits across all services.
+      x-ai-role: billing_specialist
+      x-ai-description: Comprehensive financial and usage status report.
+      x-ai-reasoning-instructions:
+        - Review limits for Email, SMTP, and Push services.
+        - Check tariff expiration dates and bonus balances.
+      x-ai-responding-instructions:
+        - Break down the balance by service (Email, SMTP, Push).
+        - Highlight when tariffs are expiring or subscribers limits are reached.
+      x-ai-suggestions:
+        - Renew your email tariff.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Detailed balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedBalanceResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /v2/email-service/webhook:
+    get:
+      tags:
+        - Webhooks
+      summary: Get webhooks
+      operationId: getWebhooks
+      description: Retrieve the list of configured email service webhooks.
+      x-ai-role: integration_specialist
+      x-ai-description: Audit your real-time notification endpoints.
+      x-ai-reasoning-instructions:
+        - Check which URLs are receiving event notifications.
+        - Identify active actions (e.g., unsubscribe, open).
+      x-ai-responding-instructions:
+        - List all webhook IDs, URLs, and their tracked actions.
+      x-ai-suggestions:
+        - Create a new webhook for 'delivered' events.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    post:
+      tags:
+        - Webhooks
+      summary: Create a webhook
+      operationId: createWebhook
+      description: Configure a new webhook to track email events.
+      x-ai-role: integration_specialist
+      x-ai-description: Set up automated notifications for your external systems.
+      x-ai-reasoning-instructions:
+        - Provide a valid HTTPS handler URL.
+        - Choose specific actions to track (e.g., unsubscribe, open, delivered).
+      x-ai-responding-instructions:
+        - Confirm the new webhook configuration and provide its ID.
+      x-ai-suggestions:
+        - >-
+          {"url": "https://example.com/webhook", "actions": ["open",
+          "unsubscribe"]}
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreateRequest'
+      responses:
+        '200':
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /v2/email-service/webhook/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - Webhooks
+      summary: Get webhook by ID
+      operationId: getWebhookById
+      description: Retrieve details for a specific webhook.
+      x-ai-role: integration_specialist
+      x-ai-description: Inspect a single webhook configuration.
+      x-ai-reasoning-instructions:
+        - Verify the webhook ID is correct.
+        - Review the URL and actions.
+      x-ai-responding-instructions:
+        - Show the webhook's current settings.
+      x-ai-suggestions:
+        - Update the webhook URL.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - InformationRetrieval
+      responses:
+        '200':
+          description: Webhook details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    put:
+      tags:
+        - Webhooks
+      summary: Update a webhook
+      operationId: updateWebhook
+      description: Update the URL for an existing webhook.
+      x-ai-role: integration_specialist
+      x-ai-description: Point an existing webhook to a new handler URL.
+      x-ai-reasoning-instructions:
+        - Ensure the new URL is reachable and secure.
+        - Note that this only updates the URL, not the actions.
+      x-ai-responding-instructions:
+        - Confirm that the webhook has been updated.
+      x-ai-suggestions:
+        - '{"url": "https://new-site.com/callback"}'
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - ResourceStateUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookUpdateRequest'
+      responses:
+        '200':
+          description: Webhook updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+    delete:
+      tags:
+        - Webhooks
+      summary: Delete a webhook
+      operationId: deleteWebhook
+      description: Remove a webhook configuration.
+      x-ai-role: integration_specialist
+      x-ai-description: Stop receiving event notifications at this endpoint.
+      x-ai-reasoning-instructions:
+        - Verify this webhook is no longer needed.
+        - Once deleted, you will stop receiving events at the configured URL.
+      x-ai-responding-instructions:
+        - Confirm that the webhook has been successfully removed.
+      x-ai-suggestions:
+        - List all remaining webhooks.
+      x-ai-capabilities:
+        security_info:
+          data_handling:
+            - DataDestruction
+      responses:
+        '200':
+          description: Webhook deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+components:
+  schemas:
+    MailingList:
+      type: object
+      x-ai-description: Metadata and health metrics for a subscriber list.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        all_email_qty:
+          type: integer
+        active_email_qty:
+          type: integer
+        inactive_email_qty:
+          type: integer
+        creationdate:
+          type: string
+        status:
+          type: integer
+        status_explain:
+          type: string
+    VariableDefinition:
+      type: object
+      x-ai-description: Definition of a custom field.
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - string
+            - number
+            - date
+    EmailContact:
+      type: object
+      x-ai-description: Subscriber record.
+      properties:
+        email:
+          type: string
+        status:
+          type: integer
+        status_explain:
+          type: string
+        variables:
+          type: object
+    EmailContactBasic:
+      type: object
+      x-ai-description: Minimal subscriber record.
+      properties:
+        email:
+          type: string
+        status:
+          type: integer
+        status_explain:
+          type: string
+    ResultTrue:
+      type: object
+      x-ai-description: Success indicator.
+      properties:
+        result:
+          type: boolean
+    ResultTrueWithId:
+      type: object
+      x-ai-description: Success indicator with ID.
+      properties:
+        result:
+          type: boolean
+        id:
+          type: integer
+    CampaignCost:
+      type: object
+      x-ai-description: Cost breakdown.
+      properties:
+        cur:
+          type: string
+        sent_emails_qty:
+          type: integer
+        overdraftAllEmailsPrice:
+          type: number
+        result:
+          type: boolean
+    CampaignCreateRequest:
+      type: object
+      required:
+        - sender_name
+        - sender_email
+        - subject
+      x-ai-description: >-
+        Payload to create an email campaign. One of 'body' or 'template_id' is
+        required. One of 'list_id' or 'segment_id' is required.
+      properties:
+        sender_name:
+          type: string
+          description: Sender's name
+          example: my_sender_name
+        sender_email:
+          type: string
+          description: Sender's email address
+          example: my_sender@test.com
+        subject:
+          type: string
+          description: Email subject
+          example: hello customer
+        body:
+          type: string
+          description: >-
+            HTML code of the template, encoded in Base64. Required if
+            template_id is not provided.
+          example: SmFja2llIENoYW4=
+        template_id:
+          oneOf:
+            - type: integer
+            - type: string
+          description: >-
+            Template ID uploaded or created in the service. Required if body is
+            not provided.
+          example: '775667'
+        list_id:
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
+              maxItems: 10
+          description: >-
+            Mailing list ID or array of mailing list IDs. Required if segment_id
+            is not provided. Max 10 IDs.
+          example: 756589
+        segment_id:
+          type: integer
+          description: Segment ID created in your account.
+          example: 12345
+        is_test:
+          type: boolean
+          description: Send a test email to the sender's address specified in sender_email.
+          example: false
+        send_date:
+          type: string
+          description: Scheduled date and time (Y-m-d H:i:s). Must not be in the past.
+          example: '2016-02-02 23:34:23'
+        name:
+          type: string
+          description: Campaign name.
+          example: my_api_campaign
+        use_dynamic_list:
+          type: boolean
+          description: Send to contacts added after campaign creation but before sending.
+          example: true
+        attachments:
+          type: object
+          description: Attached files (max 5). Key is filename, value is content.
+          additionalProperties:
+            type: string
+          example:
+            text.txt: my content file
+        attachments_binary:
+          type: object
+          description: Attached files (max 5). Key is filename, value is Base64 content.
+          additionalProperties:
+            type: string
+          example:
+            text.txt: bXkgY29udGVudCBmaWxlIGluIGJhc2U2NA==
+        type:
+          type: string
+          enum:
+            - draft
+          description: Create campaign as a draft.
+          example: draft
+        body_amp:
+          type: string
+          description: AMP version of the email, encoded in base64.
+          example: bXkgYW1wIGJvZHk=
+        stats:
+          type: object
+          description: Enable collection of statistics on opens and clicks.
+          properties:
+            clicks:
+              type: boolean
+              default: true
+              description: Track link clicks.
+            opens:
+              type: boolean
+              default: true
+              description: Track email opens.
+            utm_campaign:
+              type: string
+              description: Custom UTM tags for Google Analytics.
+          example:
+            opens: true
+            clicks: false
+            utm_campaign: MY_UTM
+    CampaignCreateResponse:
+      type: object
+      x-ai-description: Response from campaign creation.
+      properties:
+        id:
+          type: integer
+          description: Email campaign ID
+          example: 245587
+        status:
+          type: integer
+          description: Task status for sending (13 - copying addresses, 26 - draft)
+          example: 13
+        count:
+          type: integer
+          description: Number of recipients
+          example: 1
+        tariff_email_qty:
+          type: integer
+          description: Number of emails written off from balance
+          example: 1
+        overdraft_price:
+          type: string
+          description: Price for one email at an increase
+          example: '0.0044'
+        ovedraft_currency:
+          type: string
+          description: Currency
+          example: USD
+    CampaignSummary:
+      type: object
+      x-ai-description: Campaign summary.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: integer
+    CampaignDetails:
+      type: object
+      x-ai-description: Detailed campaign stats.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: integer
+    CampaignUpdateRequest:
+      type: object
+      x-ai-description: Payload for updating a campaign.
+      properties:
+        name:
+          type: string
+        subject:
+          type: string
+    ReferralStat:
+      type: object
+      x-ai-description: Click statistics.
+      properties:
+        link:
+          type: string
+        count:
+          type: integer
+    CampaignByListSummary:
+      type: object
+      x-ai-description: Campaigns for a list.
+      properties:
+        task_id:
+          type: integer
+    TemplateDetails:
+      type: object
+      x-ai-description: Template metadata.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    TemplateSummary:
+      type: object
+      x-ai-description: Template summary.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    Sender:
+      type: object
+      x-ai-description: Authorized sender.
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+    SenderActivationResponse:
+      type: object
+      x-ai-description: Activation result.
+      properties:
+        result:
+          type: boolean
+    EmailAcrossBooks:
+      type: object
+      x-ai-description: Subscriber status in a book.
+      properties:
+        book_id:
+          type: integer
+        email:
+          type: string
+    EmailDetails:
+      type: object
+      x-ai-description: History for an email.
+      properties:
+        list_name:
+          type: string
+        source:
+          type: string
+    EmailInfoShort:
+      type: object
+      x-ai-description: Brief subscriber status.
+      properties:
+        book_id:
+          type: integer
+    SubscriberStats:
+      type: object
+      x-ai-description: Engagement statistics.
+      properties:
+        statistic:
+          type: object
+    AddEmailsSingleOptIn:
+      type: object
+      x-ai-description: Add emails without confirmation.
+      properties:
+        emails:
+          type: array
+    AddEmailsDoubleOptIn:
+      type: object
+      x-ai-description: Add emails with confirmation.
+      properties:
+        emails:
+          type: array
+        confirmation:
+          type: string
+    Tag:
+      type: object
+      x-ai-description: Subscriber tag metadata.
+      properties:
+        id:
+          type: integer
+          example: 2506
+        name:
+          type: string
+          example: test1
+        color:
+          type: string
+          example: '#f0f4f6'
+    TagListResponse:
+      type: object
+      x-ai-description: List of created tags.
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        user_id:
+          type: integer
+          example: 7043663
+        version:
+          type: string
+          example: 2.7.3
+    TagCreateRequest:
+      type: object
+      x-ai-description: Payload to create a new tag.
+      required:
+        - name
+        - color
+      properties:
+        name:
+          type: string
+          example: test3
+        color:
+          type: string
+          example: '#f0f4f6'
+    TagUpdateRequest:
+      type: object
+      x-ai-description: Payload to update an existing tag.
+      required:
+        - name
+        - color
+      properties:
+        name:
+          type: string
+          example: newName
+        color:
+          type: string
+          example: '#f0f4f6'
+    TagQueueResponse:
+      type: object
+      x-ai-description: Asynchronous request confirmation.
+      properties:
+        code:
+          type: string
+          example: request_sended_to_queue
+        description:
+          type: string
+          example: Request sended to queue
+        failure:
+          type: boolean
+          example: false
+        http_code:
+          type: integer
+          example: 200
+        queue_id:
+          type: string
+          example: 9621c9bf-f2b2-440a-a2a7-764cfd62f929
+        success:
+          type: boolean
+          example: true
+        user_id:
+          type: integer
+          example: 7043663
+        version:
+          type: string
+          example: 2.7.3
+    TagPinUnpinEmailRequest:
+      type: object
+      x-ai-description: Payload to assign/unassign tags for an email.
+      required:
+        - email
+        - tags
+      properties:
+        email:
+          type: string
+          example: test@test.com
+        tags:
+          type: array
+          items:
+            type: integer
+          example:
+            - 11111
+            - 22222
+    TagPinUnpinPhoneRequest:
+      type: object
+      x-ai-description: Payload to assign/unassign tags for a phone number.
+      required:
+        - phone
+        - tags
+      properties:
+        phone:
+          type: string
+          example: '123456789'
+        tags:
+          type: array
+          items:
+            type: integer
+          example:
+            - 11111
+            - 22222
+    BlacklistAddRequest:
+      type: object
+      x-ai-description: Payload to add emails to blacklist.
+      required:
+        - emails
+      properties:
+        emails:
+          type: string
+          description: Base64 encoded comma-separated emails.
+          example: >-
+            dXNlcjFAbWFpbHNlcnZlci5jb20sdXNlcjJAbWFpbHNlcnZlci5jb20sdXNlcjNAbWFpbHNlcnZlci5jb20=
+        comment:
+          type: string
+          example: comment
+    BlacklistDeleteRequest:
+      type: object
+      x-ai-description: Payload to remove emails from blacklist.
+      required:
+        - emails
+      properties:
+        emails:
+          type: string
+          description: Base64 encoded comma-separated emails.
+          example: >-
+            dXNlcjFAbWFpbHNlcnZlci5jb20sdXNlcjJAbWFpbHNlcnZlci5jb20sdXNlcjNAbWFpbHNlcnZlci5jb20=
+    BalanceResponse:
+      type: object
+      x-ai-description: Account balance info.
+      properties:
+        currency:
+          type: string
+          example: USD
+        balance_currency:
+          type: number
+          example: 0.02
+    DetailedBalanceResponse:
+      type: object
+      x-ai-description: Detailed account balance and limits.
+      properties:
+        balance:
+          type: object
+          properties:
+            main:
+              type: string
+              example: '9.36'
+            bonus:
+              type: string
+              example: '5.00'
+            currency:
+              type: string
+              example: USD
+        email:
+          type: object
+          properties:
+            tariff_name:
+              type: string
+              example: Pay as you go 10 000
+            finished_time:
+              type: string
+              example: '2019-04-25 08:03:02'
+            emails_left:
+              type: integer
+              example: 9914
+            maximum_subscribers:
+              type: integer
+              example: 10000
+            current_subscribers:
+              type: integer
+              example: 0
+        smtp:
+          type: object
+          properties:
+            tariff_name:
+              type: string
+              example: SMTP Free
+            end_date:
+              type: string
+              example: '2018-11-21 15:05:39'
+            auto_renew:
+              type: integer
+              example: 1
+        push:
+          type: object
+          properties:
+            tariff_name:
+              type: string
+              example: White Label
+            end_date:
+              type: string
+              example: '2018-11-30'
+            auto_renew:
+              type: integer
+              example: 1
+    Webhook:
+      type: object
+      x-ai-description: Webhook configuration.
+      properties:
+        id:
+          type: integer
+          example: 162242
+        user_id:
+          type: integer
+          example: 7043663
+        url:
+          type: string
+          example: https://site.com/callback
+        action:
+          type: string
+          example: unsubscribe
+    WebhookListResponse:
+      type: object
+      x-ai-description: List of webhooks.
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Webhook'
+    WebhookResponse:
+      type: object
+      x-ai-description: Single webhook response.
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Webhook'
+    WebhookCreateRequest:
+      type: object
+      x-ai-description: Payload to create webhooks.
+      required:
+        - url
+        - actions
+      properties:
+        url:
+          type: string
+          example: https://site.com/callback
+        actions:
+          type: array
+          items:
+            type: string
+          example:
+            - delivered
+    WebhookUpdateRequest:
+      type: object
+      x-ai-description: Payload to update a webhook.
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          example: https://site.com/callback
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+      description: >
+        Static API Key authentication.  A long-lived token generated manually in
+        the SendPulse account settings.
+      x-ai-description: >
+        Permanent authentication token. Ideal for simple integrations without
+        token refresh logic.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 Client Credentials flow for temporary access tokens.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.sendpulse.com/oauth/access_token
+          scopes: {}
+      x-ai-description: >
+        Standard OAuth 2.0 flow using Client ID and Client Secret.  Provides
+        temporary tokens (valid for 1 hour) for enhanced security.

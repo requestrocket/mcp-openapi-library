@@ -1,0 +1,1403 @@
+openapi: 3.1.1
+info:
+  title: Fathom External API
+  version: "1.0.0"
+  description: |
+    The Fathom External API lets you poll meetings, teams, and team members, and
+    optionally receive webhooks when content from a new meeting is ready.
+
+servers:
+  - url: https://api.fathom.ai/external/v1
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /meetings:
+    get:
+      tags:
+        - Meetings
+      x-speakeasy-pagination:
+        type: cursor
+        inputs:
+          - name: cursor
+            in: parameters
+            type: cursor
+        outputs:
+          nextCursor: $.next_cursor
+
+      summary: List meetings
+      operationId: listMeetings
+      parameters:
+        - in: query
+          name: calendar_invitees_domains[]
+          description: |
+            Domains of the companies to filter by. Exact match.
+
+            Pass the parameter once per value, e.g.
+            `calendar_invitees_domains[]=acme.com&calendar_invitees_domains[]=client.com`.
+
+            Returns meetings whose associated company matches one of the specified domains. (Note that meetings are only associated with one company.)
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["acme.com", "client.com"]
+          style: form
+          explode: true
+        - in: query
+          name: calendar_invitees_domains_type
+          description: Filter by whether calendar invitee list includes external email domains.
+          schema:
+            type: string
+            enum: [all, only_internal, one_or_more_external]
+            default: all
+        - in: query
+          name: created_after
+          description: Filter to meetings with created_at after this timestamp, e.g. `created_after=2025-01-01T00:00:00Z`.
+          schema:
+            type: string
+        - in: query
+          name: created_before
+          description: Filter to meetings with created_at before this timestamp, e.g. `created_before=2025-01-01T00:00:00Z`.
+          schema:
+            type: string
+        - in: query
+          name: cursor
+          description: Cursor for pagination.
+          schema:
+            type: string
+        - in: query
+          name: include_action_items
+          description: Include the action items for each meeting.
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: include_crm_matches
+          description: Include CRM matches for each meeting. Only returns data from your or your team's linked CRM.
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: include_highlights
+          description: Include the highlights for each meeting.
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: include_summary
+          description: Include the summary for each meeting. Unavailable for OAuth connected apps (use /recordings instead).
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: include_transcript
+          description: Include the transcript for each meeting. Unavailable for OAuth connected apps (use /recordings instead).
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: meeting_type
+          description: |
+            Filter by meeting type name.
+
+            Returns only meetings assigned the meeting type with this name. Use /meeting_types to discover valid values. An unknown or non-matching name returns an empty list.
+          schema:
+            type: string
+            example: "Quarterly Business Review"
+        - in: query
+          name: recorded_by[]
+          description: |
+            Email addresses of users who recorded meetings.
+
+            Pass the parameter once per value, e.g.
+            `recorded_by[]=ceo@acme.com&recorded_by[]=pm@acme.com`.
+
+            Returns meetings recorded by any of the specified users.
+
+            If no value is passed (or with `teams[]`), calls from users external to your Org will not be returned.
+          schema:
+            type: array
+            items:
+              type: string
+              format: email
+            example: ["ceo@acme.com", "pm@acme.com"]
+          style: form
+          explode: true
+        - in: query
+          name: teams[]
+          description: |
+            Team names to filter by.
+
+            Pass the parameter once per value, e.g.
+            `teams[]=Sales&teams[]=Engineering`.
+
+            Returns meetings that belong to any of the specified teams.
+
+            If no value is passed (or with `recorded_by[]`), calls from users external to your Org will not be returned.
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["Sales", "Engineering"]
+          style: form
+          explode: true
+      responses:
+        "200":
+          description: Paginated list of meetings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /recordings/{recording_id}/summary:
+    get:
+      tags:
+        - Recordings
+      summary: Get summary
+      description: |
+        This endpoint has two behaviors depending on your request payload:
+        - If you send `destination_url`, the endpoint will behave in an asynchronous manner.
+        - If you do not send `destination_url`, the endpoint will return the data directly.
+      operationId: getRecordingSummary
+      parameters:
+        - name: recording_id
+          in: path
+          required: true
+          description: The ID of the meeting recording to fetch the call summary for.
+          schema:
+            type: integer
+            example: 123456789
+        - in: query
+          name: destination_url
+          description: Destination URL for where we'll POST the call summary. If not sent, this endpoint will return the data directly.
+          schema:
+            type: string
+            format: uri
+            example: "https://example.com/destination"
+      responses:
+        "200":
+          description: Either the destination URL for where we'll POST the call summary, or the summary for the recording.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required: [summary]
+                    properties:
+                      summary:
+                        $ref: "#/components/schemas/MeetingSummary"
+                  - $ref: "#/components/schemas/CallbackResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /recordings/{recording_id}/transcript:
+    get:
+      tags:
+        - Recordings
+      summary: Get transcript
+      description: |
+        This endpoint has two behaviors depending on your request payload:
+        - If you send `destination_url`, the endpoint will behave in an asynchronous manner.
+        - If you do not send `destination_url`, the endpoint will return the data directly.
+      operationId: getRecordingTranscript
+      parameters:
+        - name: recording_id
+          in: path
+          required: true
+          description: The ID of the meeting recording to fetch the transcript for.
+          schema:
+            type: integer
+            example: 123456789
+        - in: query
+          name: destination_url
+          description: Destination URL for where we'll POST the transcript. If not sent, this endpoint will return the data directly.
+          required: false
+          schema:
+            type: string
+            format: uri
+            example: "https://example.com/destination"
+      responses:
+        "200":
+          description: Either the destination URL for where we'll POST the transcript, or the transcript for the recording as an array.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required: [transcript]
+                    properties:
+                      transcript:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/TranscriptItem"
+                  - $ref: "#/components/schemas/CallbackResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /recordings/{recording_id}/download:
+    post:
+      tags:
+        - Recordings
+      summary: Request a download
+      description: |
+        Starts async generation of a downloadable file and returns a `download_id` to poll. Video is generated in the background; audio-only recordings complete immediately, so the response may already return `status: completed` with the file payload.
+
+        Downloads are private to the API client that created them, and URLs expire ~24 hours after generation—request a new one when it expires.
+
+        Only the owner, teammates who can view the recording, and people it was shared with at standard or admin level can download it. Limited-access shares get `403 Forbidden`.
+
+      operationId: createRecordingDownload
+      parameters:
+        - name: recording_id
+          in: path
+          required: true
+          description: The ID of the meeting recording to generate a download for.
+          schema:
+            type: integer
+            example: 123456789
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destination_url:
+                  type: string
+                  format: uri
+                  description: URL Fathom POSTs the completed download payload to when it is ready. If omitted, poll the status endpoint.
+                  example: "https://example.com/destination"
+      responses:
+        "202":
+          description: The download request was accepted. Poll the download status endpoint until it completes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordingDownload"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Unprocessable - the recording has no downloadable media.
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /recordings/{recording_id}/downloads/{download_id}:
+    get:
+      tags:
+        - Recordings
+      summary: Get download status
+      description: |
+        Returns the status of a download created with the request-a-download endpoint. When the
+        download is completed, the payload carries a short-lived signed URL for the generated
+        file. Only the API client that created the download can read it.
+      operationId: getRecordingDownload
+      parameters:
+        - name: recording_id
+          in: path
+          required: true
+          description: The ID of the meeting recording the download belongs to.
+          schema:
+            type: integer
+            example: 123456789
+        - name: download_id
+          in: path
+          required: true
+          description: The download ID returned when the download was requested.
+          schema:
+            type: string
+            example: "dl_CJAj1YPuruCgWHaKgEBv6Mb1UsNj8x"
+      responses:
+        "200":
+          description: The current status of the download.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordingDownload"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /teams:
+    get:
+      tags:
+        - Teams
+      x-speakeasy-pagination:
+        type: cursor
+        inputs:
+          - name: cursor
+            in: parameters
+            type: cursor
+        outputs:
+          nextCursor: $.next_cursor
+      summary: List teams
+      operationId: listTeams
+      parameters:
+        - in: query
+          name: cursor
+          description: Cursor for pagination.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of teams.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /team_members:
+    get:
+      tags:
+        - Team Members
+      x-speakeasy-pagination:
+        type: cursor
+        inputs:
+          - name: cursor
+            in: parameters
+            type: cursor
+        outputs:
+          nextCursor: $.next_cursor
+      summary: List team members
+      operationId: listTeamMembers
+      parameters:
+        - in: query
+          name: cursor
+          description: Cursor for pagination.
+          schema:
+            type: string
+        - in: query
+          name: team
+          description: Team name to filter by.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of team members.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMemberListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /users:
+    get:
+      tags:
+        - Users
+      x-speakeasy-pagination:
+        type: cursor
+        inputs:
+          - name: cursor
+            in: parameters
+            type: cursor
+        outputs:
+          nextCursor: $.next_cursor
+      summary: List users and their permissions
+      description: |
+        List all users in the account with their permissions.
+
+        Admin only. Returns 403 Forbidden unless the API key belongs to a user with `settings_access` of `account_admin`.
+
+        Results include active, deactivated, then pending members; page through with `next_cursor`, or filter with `status`. Invited users have no permissions object yet, and their `created_at` is the invite date.
+      operationId: listUsers
+      parameters:
+        - in: query
+          name: cursor
+          description: Cursor for pagination.
+          schema:
+            type: string
+        - in: query
+          name: team
+          description: Team name to filter by.
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter by user status. `invited` cannot be combined with `settings_access`.
+          schema:
+            type: string
+            enum: [active, deactivated, invited]
+        - in: query
+          name: settings_access
+          description: Filter by settings access level.
+          schema:
+            type: string
+            enum: [none, team_admin, account_admin]
+      responses:
+        "200":
+          description: Paginated list of users.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /meeting_types:
+    get:
+      tags:
+        - Meetings
+      x-speakeasy-pagination:
+        type: cursor
+        inputs:
+          - name: cursor
+            in: parameters
+            type: cursor
+        outputs:
+          nextCursor: $.next_cursor
+      summary: List meeting types
+      description: |
+        List your org's meeting types, including both `active` and `inactive`. Use the returned `name` values as the meeting_type filter on GET /meetings.
+      operationId: listMeetingTypes
+      parameters:
+        - in: query
+          name: cursor
+          description: Cursor for pagination.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated list of meeting types.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingTypeListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /webhooks:
+    post:
+      tags:
+        - Webhooks
+      operationId: createWebhook
+      summary: Create a webhook
+      description: |
+        Create a webhook to receive new meeting content.
+        At least one of `include_transcript`, `include_crm_matches`, `include_summary`, or `include_action_items` must be true.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [destination_url, triggered_for]
+              additionalProperties: false
+              properties:
+                destination_url:
+                  type: string
+                  description: The URL to send the webhook to.
+                  format: uri
+                  example: "https://example.com/webhook"
+                include_action_items:
+                  type: boolean
+                  description: Include the action items for each meeting.
+                  default: false
+                  example: true
+                include_crm_matches:
+                  type: boolean
+                  description: Include CRM matches for each meeting. Only returns data from your or your team's linked CRM.
+                  default: false
+                  example: true
+                include_summary:
+                  type: boolean
+                  description: Include the summary for each meeting.
+                  default: false
+                  example: true
+                include_transcript:
+                  type: boolean
+                  description: Include the transcript for each meeting.
+                  default: false
+                  example: true
+                triggered_for:
+                  type: array
+                  example: [my_recordings, my_shared_with_team_recordings, shared_external_recordings]
+                  description: |
+                    You must send at least one of the following types of recordings to trigger on.
+                    - `my_recordings`: Your private recordings, as well as those you've shared with individuals. (On Team Plans, this excludes recordings you've shared with any teams.)
+                    - `shared_external_recordings`: Recordings shared with you by other users. (For Team Plans, this does not include recordings shared by other users on your Team Plan.)
+                    - `my_shared_with_team_recordings`: (Team Plans only). All recordings that you have shared with other teams (e.g. Marketing or Sales). Recordings you've shared with individuals but not with teams are not included.
+                    - `shared_team_recordings`: (Team Plans only) All recordings you can access from other users on your Team Plan, whether shared with you individually or with your team.
+                  items:
+                    type: string
+                    enum: [my_recordings, shared_external_recordings, my_shared_with_team_recordings, shared_team_recordings]
+      responses:
+        "201":
+          description: The created webhook.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Webhook"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /webhooks/{id}:
+    delete:
+      tags:
+        - Webhooks
+      operationId: deleteWebhook
+      summary: Delete a webhook
+      description: Delete a webhook.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the webhook to delete.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The webhook was deleted successfully.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+webhooks:
+  newMeeting:
+    post:
+      tags:
+        - Webhook Payloads
+      operationId: newMeeting
+      summary: New meeting content ready
+      description: Webhook sent to the URL you register in Fathom settings.
+      parameters:
+        - name: webhook-id
+          in: header
+          description: >-
+            Unique message identifier for the webhook message. This identifier
+            is unique across all messages, but will be the same when the same
+            webhook is being resent (e.g. due to a previous failure).
+          required: true
+          schema:
+            type: string
+            example: "msg_2x2zwLOcWaRTzsLK8KtbQt1FTk9"
+        - name: webhook-timestamp
+          in: header
+          description: Timestamp in seconds since epoch.
+          required: true
+          schema:
+            type: integer
+            example: 1712345678
+        - name: webhook-signature
+          in: header
+          description: >-
+            Signature with version prefix and base64-encoded value. Format is
+            `<version>,<base64_signature>`. Multiple signatures may be space-delimited
+            (e.g. `v1,RmF0aG9t v2,QVBJ`).
+            [How to verify webhook signatures.](/webhooks#verifying-webhooks)
+          required: true
+          schema:
+            type: string
+            example: "v1,BKQR1BIFjiNPdfpqM3+FH/YckKhX7WIq4/KK6Cc5aDY="
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meeting"
+            example:
+              title: "Quarterly Business Review"
+              meeting_title: "QBR 2025 Q1"
+              meeting_type: "Quarterly Business Review"
+              url: "https://fathom.video/xyz123"
+              meeting_url: "https://us02web.zoom.us/j/123456789"
+              share_url: "https://fathom.video/share/xyz123"
+              created_at: "2025-03-01T17:01:30Z"
+              scheduled_start_time: "2025-03-01T16:00:00Z"
+              scheduled_end_time: "2025-03-01T17:00:00Z"
+              recording_start_time: "2025-03-01T16:01:12Z"
+              recording_end_time: "2025-03-01T17:00:55Z"
+              calendar_invitees_domains_type: one_or_more_external
+              shared_with: single_team
+              transcript:
+                - speaker:
+                    display_name: "Jane Doe"
+                    matched_calendar_invitee_email: "jane.doe@acme.com"
+                  text: "Let's revisit the budget allocations."
+                  timestamp: "00:05:32"
+                - speaker:
+                    display_name: "John Smith"
+                    matched_calendar_invitee_email: "john.smith@client.com"
+                  text: "I agree, we need to adjust our projections."
+                  timestamp: "00:05:40"
+              default_summary:
+                template_name: "general"
+                markdown_formatted: |
+                  ## Summary
+                  We reviewed Q1 OKRs, identified budget risks, and agreed to revisit projections next month.
+              action_items:
+                - description: "Email revised proposal to client"
+                  user_generated: false
+                  completed: false
+                  recording_timestamp: "00:10:45"
+                  recording_playback_url: "https://fathom.video/calls/xyz123?timestamp=645"
+                  assignee:
+                    name: "Jane Doe"
+                    email: "jane.doe@acme.com"
+                    team: "Marketing"
+              calendar_invitees:
+                - name: "Alice Johnson"
+                  matched_speaker_display_name: "Alice Johnson"
+                  email: "alice.johnson@acme.com"
+                  is_external: false
+                  email_domain: "acme.com"
+                - name: "Jane Doe"
+                  matched_speaker_display_name: "Jane Doe"
+                  email: "jane.doe@acme.com"
+                  is_external: false
+                  email_domain: "acme.com"
+                - name: "John Smith"
+                  matched_speaker_display_name: "John Smith"
+                  email: "john.smith@client.com"
+                  is_external: true
+                  email_domain: "client.com"
+              recorded_by:
+                name: "Alice Johnson"
+                email: "alice.johnson@acme.com"
+                team: "Customer Success"
+                email_domain: "acme.com"
+              crm_matches:
+                contacts:
+                  - name: "John Smith"
+                    email: "john.smith@client.com"
+                    record_url: "https://app.hubspot.com/contacts/123"
+                companies:
+                  - name: "Acme Corp"
+                    record_url: "https://app.hubspot.com/companies/456"
+                deals:
+                  - name: "Q1 Renewal"
+                    amount: 50000
+                    record_url: "https://app.hubspot.com/deals/789"
+      responses:
+        "200":
+          description: Return any 2xx code to acknowledge receipt.
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: >
+        Include your API key in the `X-Api-Key` header of every request.
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  responses:
+    BadRequest:
+      description: Bad request - the query parameters were invalid.
+    Unauthorized:
+      description: Unauthorized - missing or invalid `Authorization` header.
+    Forbidden:
+      description: Forbidden - the authenticated user is not permitted to perform this request.
+    NotFound:
+      description: Not found - the resource was not found.
+    RateLimited:
+      description: Rate limited - you have exceeded the rate limit for the requested endpoint. Check our [rate limiting](/api-reference#rate-limiting) documentation for more information.
+
+  schemas:
+    Webhook:
+      type: object
+      required:
+        [
+          id,
+          url,
+          secret,
+          created_at,
+          include_transcript,
+          include_crm_matches,
+          include_summary,
+          include_action_items,
+          triggered_for,
+        ]
+      properties:
+        id:
+          type: string
+          example: "ikEoQ4bVoq4JYUmc"
+        url:
+          type: string
+          format: uri
+          example: "https://example.com/webhook"
+        secret:
+          type: string
+          description: The secret used to verify the webhook signature.
+          example: "whsec_x6EV6NIAAz3ldclszNJTwrow"
+        created_at:
+          type: string
+          description: The date and time the webhook was created in ISO 8601 format.
+          format: date-time
+          example: "2025-06-30T10:40:46Z"
+        include_transcript:
+          type: boolean
+          example: true
+        include_crm_matches:
+          type: boolean
+          example: true
+        include_summary:
+          type: boolean
+          example: true
+        include_action_items:
+          type: boolean
+          example: true
+        triggered_for:
+          type: array
+          example: [my_recordings, my_shared_with_team_recordings, shared_external_recordings]
+          items:
+            type: string
+            enum: [my_recordings, shared_external_recordings, my_shared_with_team_recordings, shared_team_recordings]
+
+    MeetingListResponse:
+      type: object
+      required: [limit, next_cursor, items]
+      properties:
+        limit:
+          type: integer
+          nullable: true
+          example: 1
+        next_cursor:
+          type: string
+          nullable: true
+          example: "eyJwYWdlX251bSI6Mn0="
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Meeting"
+
+    TeamListResponse:
+      type: object
+      required: [limit, next_cursor, items]
+      properties:
+        limit:
+          type: integer
+        next_cursor:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Team"
+
+    MeetingTypeListResponse:
+      type: object
+      required: [limit, next_cursor, items]
+      properties:
+        limit:
+          type: integer
+          nullable: true
+          example: 1
+        next_cursor:
+          type: string
+          nullable: true
+          example: "eyJwYWdlX251bSI6Mn0="
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeetingType"
+
+    TeamMemberListResponse:
+      type: object
+      required: [limit, next_cursor, items]
+      properties:
+        limit:
+          type: integer
+        next_cursor:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMember"
+
+    UserListResponse:
+      type: object
+      required: [limit, next_cursor, items]
+      properties:
+        limit:
+          type: integer
+        next_cursor:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+
+    CallbackResponse:
+      type: object
+      required: [destination_url]
+      properties:
+        destination_url:
+          type: string
+          format: uri
+          example: "https://example.com/destination"
+
+    Meeting:
+      type: object
+      required:
+        - title
+        - meeting_title
+        - meeting_type
+        - recording_id
+        - url
+        - share_url
+        - created_at
+        - scheduled_start_time
+        - scheduled_end_time
+        - recording_start_time
+        - recording_end_time
+        - calendar_invitees_domains_type
+        - shared_with
+        - recorded_by
+        - transcript_language
+        - calendar_invitees
+      properties:
+        title:
+          type: string
+          example: "Quarterly Business Review"
+        meeting_title:
+          type: string
+          example: "QBR 2025 Q1"
+          description: Calendar event title.
+          nullable: true
+        meeting_type:
+          type: string
+          example: "Quarterly Business Review"
+          description: The name of the meeting type assigned to this meeting, or `null` if none is assigned.
+          nullable: true
+        recording_id:
+          type: integer
+          example: 123456789
+          description: The ID of the meeting recording.
+        url:
+          type: string
+          format: uri
+          example: "https://fathom.video/xyz123"
+        meeting_url:
+          type: string
+          format: uri
+          example: "https://us02web.zoom.us/j/123456789"
+          description: The underlying meeting join URL (Zoom, Google Meet, Microsoft Teams, or Slack huddle) from the calendar event. `null` when there is no associated calendar meeting.
+          nullable: true
+        share_url:
+          type: string
+          format: uri
+          example: "https://fathom.video/share/xyz123"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-03-01T17:01:30Z"
+        scheduled_start_time:
+          type: string
+          format: date-time
+          example: "2025-03-01T16:00:00Z"
+        scheduled_end_time:
+          type: string
+          format: date-time
+          example: "2025-03-01T17:00:00Z"
+        recording_start_time:
+          type: string
+          format: date-time
+          example: "2025-03-01T16:01:12Z"
+        recording_end_time:
+          type: string
+          format: date-time
+          example: "2025-03-01T17:00:55Z"
+        calendar_invitees_domains_type:
+          type: string
+          enum: [only_internal, one_or_more_external]
+          example: one_or_more_external
+        shared_with:
+          type: string
+          enum: [no_teams, single_team, multiple_teams, all_teams]
+          example: single_team
+          description: >-
+            Who the meeting is shared with within your organization.
+            `no_teams`: private to the recorder.
+            `single_team`: shared with one team.
+            `multiple_teams`: shared with multiple teams.
+            `all_teams`: shared with everyone in the organization.
+        transcript_language:
+          type: string
+          example: "en"
+        transcript:
+          type: array
+          items:
+            $ref: "#/components/schemas/TranscriptItem"
+          nullable: true
+        default_summary:
+          $ref: "#/components/schemas/MeetingSummary"
+          nullable: true
+        action_items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActionItem"
+          nullable: true
+        highlights:
+          type: array
+          items:
+            $ref: "#/components/schemas/Highlight"
+          nullable: true
+        calendar_invitees:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invitee"
+        recorded_by:
+          $ref: "#/components/schemas/FathomUser"
+        crm_matches:
+          $ref: "#/components/schemas/CRMMatches"
+          nullable: true
+
+    CRMMatches:
+      type: object
+      nullable: true
+      description: |
+        CRM data linked to the meeting. Only returns data from your or your team's linked CRM.
+        If no CRM is connected for the workspace, the `error` field will be populated.
+      properties:
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/CRMContactMatch"
+        companies:
+          type: array
+          items:
+            $ref: "#/components/schemas/CRMCompanyMatch"
+        deals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CRMDealMatch"
+        error:
+          type: string
+          nullable: true
+          example: "no CRM connected"
+
+    CRMContactMatch:
+      type: object
+      required: [name, email, record_url]
+      properties:
+        name:
+          type: string
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "jane.smith@client.com"
+        record_url:
+          type: string
+          format: uri
+          example: "https://app.hubspot.com/contacts/123"
+
+    CRMCompanyMatch:
+      type: object
+      required: [name, record_url]
+      properties:
+        name:
+          type: string
+          example: "Acme Corp"
+        record_url:
+          type: string
+          format: uri
+          example: "https://app.hubspot.com/companies/456"
+
+    CRMDealMatch:
+      type: object
+      required: [name, amount, record_url]
+      properties:
+        name:
+          type: string
+          example: "Q1 Renewal"
+        amount:
+          type: number
+          description: The amount in dollars.
+          example: 50000.00
+        record_url:
+          type: string
+          format: uri
+          example: "https://app.hubspot.com/deals/789"
+
+    MeetingSummary:
+      type: object
+      required: [template_name, markdown_formatted]
+      properties:
+        template_name:
+          type: string
+          example: "general"
+          nullable: true
+        markdown_formatted:
+          type: string
+          example: |
+            ## Summary
+            We reviewed Q1 OKRs, identified budget risks, and agreed to revisit projections next month.
+          description: Always displayed in English.
+          nullable: true
+
+    ActionItem:
+      type: object
+      required:
+        - description
+        - user_generated
+        - completed
+        - recording_timestamp
+        - recording_playback_url
+        - assignee
+      properties:
+        description:
+          type: string
+          example: "Email revised proposal to client"
+          description: Always displayed in English.
+        user_generated:
+          type: boolean
+          example: false
+        completed:
+          type: boolean
+          example: false
+        recording_timestamp:
+          type: string
+          pattern: '^\d{2}:\d{2}:\d{2}$'
+          description: Timestamp relative to the start of the recording (HH:MM:SS).
+          example: "00:10:45"
+        recording_playback_url:
+          type: string
+          format: uri
+          example: "https://fathom.video/calls/xyz123?timestamp=645"
+        assignee:
+          $ref: "#/components/schemas/Assignee"
+
+    Assignee:
+      type: object
+      required: [name, email, team]
+      properties:
+        name:
+          type: string
+          example: "Alice Johnson"
+          nullable: true
+        email:
+          type: string
+          format: email
+          example: "alice.johnson@acme.com"
+          nullable: true
+        team:
+          type: string
+          example: "Marketing"
+          nullable: true
+
+    Highlight:
+      type: object
+      required:
+        - type
+        - summary
+        - start_time
+        - end_time
+      properties:
+        type:
+          type: string
+          description: The label of the bookmark this highlight was created from.
+          example: "Objection"
+        summary:
+          type: string
+          description: A short summary of the highlighted moment.
+          example: "Pushed back on price"
+          nullable: true
+        text:
+          type: string
+          description: The full text of the highlight. Only present when it differs from `summary`.
+          example: "They pushed back hard on the price"
+        start_time:
+          type: number
+          description: Start of the highlight, in seconds from the start of the recording.
+          example: 16
+        end_time:
+          type: number
+          description: End of the highlight, in seconds from the start of the recording.
+          example: 27.5
+
+    TranscriptItem:
+      type: object
+      required: [speaker, text, timestamp]
+      properties:
+        speaker:
+          $ref: "#/components/schemas/TranscriptItemSpeaker"
+        text:
+          type: string
+          example: "Let's revisit the budget allocations."
+        timestamp:
+          type: string
+          pattern: '^\d{2}:\d{2}:\d{2}$'
+          description: Timestamp relative to the start of the meeting (HH:MM:SS).
+          example: "00:05:32"
+
+    TranscriptItemSpeaker:
+      type: object
+      required: [display_name]
+      properties:
+        display_name:
+          type: string
+          example: "Alice Johnson"
+        matched_calendar_invitee_email:
+          type: string
+          nullable: true
+          description: |
+            The email address of the calendar invitee matching this speaker. Null if no exact match found.
+          format: email
+          example: "alice.johnson@acme.com"
+
+    Invitee:
+      type: object
+      required: [name, email, email_domain, is_external]
+      properties:
+        name:
+          type: string
+          example: "Alice Johnson"
+          nullable: true
+        matched_speaker_display_name:
+          type: string
+          description: |
+            (When `include_transcript` is `true`) The display_name matching this email address. Null if no exact match found.
+
+            Only available for meetings after Feb 1, 2025.
+          example: "Alice Johnson"
+          nullable: true
+        email:
+          type: string
+          format: email
+          example: "alice.johnson@acme.com"
+          nullable: true
+        email_domain:
+          type: string
+          example: "acme.com"
+          nullable: true
+        is_external:
+          type: boolean
+          example: false
+
+    FathomUser:
+      type: object
+      required: [name, email, email_domain, team]
+      properties:
+        name:
+          type: string
+          example: "Alice Johnson"
+        email:
+          type: string
+          format: email
+          example: "alice.johnson@acme.com"
+        email_domain:
+          type: string
+          example: "acme.com"
+        team:
+          type: string
+          example: "Marketing"
+          nullable: true
+
+    Team:
+      type: object
+      required: [name, created_at]
+      properties:
+        name:
+          type: string
+          example: "Sales"
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-11-10T12:00:00Z"
+
+    MeetingType:
+      type: object
+      required: [name, status, created_at]
+      properties:
+        name:
+          type: string
+          example: "Quarterly Business Review"
+        status:
+          type: string
+          enum: [active, inactive]
+          description: |
+            Whether the meeting type is currently assignable. `active` types can be assigned to meetings going forward; `inactive` types are no longer assigned going forward but may still appear on historical meetings.
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-11-10T12:00:00Z"
+
+    TeamMember:
+      type: object
+      required: [name, email, created_at]
+      properties:
+        name:
+          type: string
+          example: "Bob Lee"
+        email:
+          type: string
+          format: email
+          example: "bob.lee@acme.com"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-06-01T08:30:00Z"
+
+    User:
+      type: object
+      required: [name, email, created_at, status]
+      properties:
+        name:
+          type: string
+          nullable: true
+          example: "Bob Lee"
+        email:
+          type: string
+          format: email
+          example: "bob.lee@acme.com"
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-06-01T08:30:00Z"
+        status:
+          $ref: "#/components/schemas/UserStatus"
+        permissions:
+          $ref: "#/components/schemas/UserPermissions"
+
+    UserStatus:
+      type: string
+      enum: [active, deactivated, invited]
+
+    UserPermissions:
+      type: object
+      description: Omitted for invited users.
+      required: [settings_access, view_access]
+      properties:
+        settings_access:
+          $ref: "#/components/schemas/UserSettingsAccess"
+        view_access:
+          $ref: "#/components/schemas/UserViewAccess"
+
+    UserSettingsAccess:
+      type: object
+      required: [level, teams]
+      properties:
+        level:
+          type: string
+          enum: [none, team_admin, account_admin]
+        teams:
+          type: array
+          description: Teams the level applies to - every team for `account_admin`, the administered teams for `team_admin`, empty for `none`.
+          items:
+            type: string
+          example: ["Sales", "Customer Success"]
+
+    UserViewAccess:
+      type: object
+      required: [level, teams]
+      properties:
+        level:
+          type: string
+          enum: [own_meetings, team, multiple_teams, all_teams]
+        teams:
+          type: array
+          description: Teams whose meetings the user can view - every team for `all_teams`, the granted teams for `team` and `multiple_teams`, empty for `own_meetings`.
+          items:
+            type: string
+          example: ["Sales"]
+
+    RecordingDownloadStatus:
+      type: string
+      enum: [processing, completed, failed, expired]
+      example: "processing"
+
+    RecordingDownloadFile:
+      type: object
+      required: [url, content_type, file_size_bytes, expires_at]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Short-lived signed URL for the generated file. Valid until `expires_at`.
+          example: "https://media.fathom.ai/downloads/..."
+        content_type:
+          type: string
+          example: "video/mp4"
+        file_size_bytes:
+          type: integer
+          example: 154763264
+        expires_at:
+          type: string
+          format: date-time
+          description: When the download and its URL expire. Request a new download after this time.
+          example: "2026-07-13T18:30:00Z"
+
+    RecordingDownload:
+      type: object
+      required: [download_id, recording_id, status]
+      properties:
+        download_id:
+          type: string
+          example: "dl_CJAj1YPuruCgWHaKgEBv6Mb1UsNj8x"
+        recording_id:
+          type: integer
+          example: 123456789
+        status:
+          $ref: "#/components/schemas/RecordingDownloadStatus"
+        video:
+          $ref: "#/components/schemas/RecordingDownloadFile"
+          description: Present when a video recording's download is completed.
+        audio:
+          $ref: "#/components/schemas/RecordingDownloadFile"
+          description: Present when an audio-only recording's download is completed.
+        failure_reason:
+          type: string
+          enum: [generation_failed, generation_timeout]
+          description: Present when the download failed.

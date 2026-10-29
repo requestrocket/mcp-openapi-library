@@ -1,0 +1,2253 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sendoso API",
+    "version": "2026-09-22",
+    "description": "The Sendoso public API for managing gifts, sends, and related resources.\n\n**Authentication:** every request carries a bearer API key in the `Authorization` header (`Authorization: Bearer sendoso_live_...`). Keys are never accepted as query parameters.\n\n**Scopes:** HTTP bearer authentication cannot express OAuth-style scopes in OpenAPI, so each operation states the scope its API key must carry in its description. Scope enforcement lives in the API itself; a key missing the required scope receives a `403` naming the scope.\n\n**Rate limits** are per organization, with separate read and write buckets. Responses carry `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` for the bucket the request counted against; a `429` carries `Retry-After`. Requests without a valid API key share a per-IP limit.\n\n**Request ids:** every response carries a server-generated `Sendoso-Request-Id` header; quote it when contacting support. Error bodies repeat it as `request_id`. Request ids sent by the client are ignored; to link a call into your own distributed trace, send a W3C `traceparent` header.\n\n**Errors:** every error response is an RFC 9457 Problem Details document with the `application/problem+json` content type. `code` is the stable, machine-readable value to branch on."
+  },
+  "servers": [
+    {
+      "url": "https://app.sendoso.com",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "API Reference",
+      "description": "The contract itself."
+    },
+    {
+      "name": "Identity",
+      "description": "Who an API key acts as."
+    },
+    {
+      "name": "Organization",
+      "description": "The users, teams, departments and roles in your organization."
+    },
+    {
+      "name": "Sends",
+      "description": "One gift to one person, from creation to delivery or redemption."
+    }
+  ],
+  "paths": {
+    "/api/v5/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Get the identity behind the API key",
+        "description": "Returns the user the credential acts as, that user's organization and team, and the credential itself. Requires no scope, so any valid credential can call it.",
+        "responses": {
+          "200": {
+            "description": "The acting user, their organization and team, and the credential.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/teams": {
+      "get": {
+        "operationId": "listTeams",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List teams",
+        "description": "Teams in your organization, with their department and member count. The list holds the teams the key's acting user can see in Sendoso; an organization admin sees every team. Requires the `teams:read` scope.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "department_id",
+            "in": "query",
+            "description": "Only teams in this department.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "12"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Free-text search over team names.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "marketing"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of teams.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/teams/{id}": {
+      "get": {
+        "operationId": "getTeam",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get a team",
+        "description": "One team. A team the key's acting user cannot see in Sendoso returns `404`. Requires the `teams:read` scope.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The team id.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The team.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Team"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/departments": {
+      "get": {
+        "operationId": "listDepartments",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List departments",
+        "description": "Departments in your organization, with their team count. The list holds the departments the key's acting user can see in Sendoso; an organization admin sees every department. Department management is a plan feature, so on a plan without it the list is empty. Requires the `departments:read` scope.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Free-text search over department names.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "marketing"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of departments.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartmentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List users",
+        "description": "People in your organization. Look a user up by `email` to attribute a send with `send_as`, or list a team's members with `team_id`. The list holds the users the key's acting user can see in Sendoso; an organization admin sees everyone, a manager sees their team, and a sender sees only themselves. Provisioning stays with SCIM at `/api/scim/v2`. Requires the `users:read` scope.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Exact email match.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "example": "jane@example.com"
+          },
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Only members of this team.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "78"
+          },
+          {
+            "name": "status[in]",
+            "in": "query",
+            "description": "Comma-separated statuses to include (`active`, `inactive`, `suspended`). Defaults to `active`.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(active|inactive|suspended)(,(active|inactive|suspended))*$"
+            },
+            "example": "active,suspended"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Free-text search over names and emails.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "jane"
+          },
+          {
+            "name": "updated_at[gte]",
+            "in": "query",
+            "description": "Changed at or after this time.",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RequestTimestamp"
+            },
+            "example": "2026-09-25T15:00:00Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of users.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/users/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get a user",
+        "description": "One user. A user outside what `GET /users` would list for the key's acting user returns `404`. Requires the `users:read` scope.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user id.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/roles": {
+      "get": {
+        "operationId": "listRoles",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List roles",
+        "description": "Roles in your organization, with their scope and member count. Every user can see their organization's roles. Set `assignable` to list only the roles the key's acting user may give someone, for example before changing a user's role; it is empty when the user may not assign roles. Requires the `roles:read` scope.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "name": "assignable",
+            "in": "query",
+            "description": "Only the roles the key's acting user may give someone.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Free-text search over role names.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "admin"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of roles.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/roles/{id}": {
+      "get": {
+        "operationId": "getRole",
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get a role",
+        "description": "One role with the permissions it grants. A role the key's acting user cannot see in Sendoso returns `404`. Requires the `roles:read` scope.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The role id.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The role.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/sends/{id}": {
+      "get": {
+        "operationId": "getSend",
+        "tags": [
+          "Sends"
+        ],
+        "summary": "Get a send",
+        "description": "One send. A send the key's acting user cannot see returns `404`. Requires the `sends:read` scope.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The send id, shown as Send ID in the Sendoso app.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The send.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Send"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/openapi.json": {
+      "get": {
+        "operationId": "getOpenapiDocument",
+        "tags": [
+          "API Reference"
+        ],
+        "summary": "Get the bundled OpenAPI document",
+        "description": "Returns the bundled OpenAPI 3.1 document describing this API. Public; no authentication required.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The bundled OpenAPI document.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/v5/rate_limit": {
+      "get": {
+        "operationId": "getRateLimit",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Get your rate-limit standing",
+        "description": "Returns the caller's current limits, remaining requests, and window reset time for the read and write buckets. The same numbers travel on every response in the `X-RateLimit-*` headers; this endpoint exists so a client can check before a burst. Requires no scope. Never counted against either bucket, so it can be polled freely.",
+        "responses": {
+          "200": {
+            "description": "The caller's standing in each bucket.",
+            "headers": {
+              "Sendoso-Request-Id": {
+                "$ref": "#/components/headers/Sendoso-Request-Id"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimit"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A Sendoso API key, prefixed `sendoso_live_`, sent as a bearer token in the `Authorization` header (`Authorization: Bearer sendoso_live_...`). Keys are never accepted via query parameter or any other header."
+      }
+    },
+    "headers": {
+      "Sendoso-Request-Id": {
+        "description": "Unique identifier for this request, for support correlation.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f"
+      },
+      "X-RateLimit-Limit": {
+        "description": "Number of requests allowed in the current rate-limit window for this organization and bucket (read or write).",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 300
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Number of requests remaining in the current rate-limit window.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 299
+      },
+      "X-RateLimit-Reset": {
+        "description": "Unix timestamp (seconds) when the current rate-limit window resets.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 1721318400
+      },
+      "Retry-After": {
+        "description": "Number of seconds to wait before retrying the request.",
+        "schema": {
+          "type": "integer"
+        },
+        "example": 30
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "description": "Resource identifier. Treat it as opaque: store it, echo it back, and compare it for equality, but never parse, order, or do arithmetic on it. It is the identifier the Sendoso web app shows for the resource: a send's Send ID, a product's or variant's catalog uuid, and the numeric id for everything else.",
+        "maxLength": 64,
+        "examples": [
+          "1234",
+          "A1B2C3D4E",
+          "8f14e45f-ceea-467a-9d3b-2c4f1a7e6b90"
+        ]
+      },
+      "ResponseTimestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$",
+        "description": "An RFC 3339 time in UTC.",
+        "example": "2026-09-01T12:00:00Z"
+      },
+      "ApiKeyCredential": {
+        "type": "object",
+        "description": "An API key credential. The secret itself is never returned.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "api_key"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name given to the key when it was created."
+          },
+          "hint": {
+            "type": "string",
+            "description": "The key's prefix, the first four characters after it, and its last four characters, matching what the key list shows, so a caller with several keys can tell which one is in use.",
+            "example": "sendoso_live_AbCd…a1b2"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The scopes the key carries. A key with no scopes can only call `GET /api/v5/me`."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "hint",
+          "scopes",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "Me": {
+        "type": "object",
+        "description": "The identity an API key acts as.",
+        "properties": {
+          "user": {
+            "type": "object",
+            "description": "The user the API key acts as. Every request made with the key runs with this user's permissions.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "first_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "last_name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "first_name",
+              "last_name"
+            ],
+            "additionalProperties": false
+          },
+          "organization": {
+            "type": "object",
+            "description": "The customer organization the user belongs to.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "team": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "The team within the organization the user belongs to, or null when the user has none.",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "credential": {
+            "description": "The credential that authenticated this request. `type` says which kind it is; clients should tolerate types they do not recognise.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ApiKeyCredential"
+              }
+            ],
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "api_key": "#/components/schemas/ApiKeyCredential"
+              }
+            }
+          }
+        },
+        "required": [
+          "user",
+          "organization",
+          "team",
+          "credential"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "user": {
+            "id": "1234",
+            "email": "jane@example.com",
+            "first_name": "Jane",
+            "last_name": "Doe"
+          },
+          "organization": {
+            "id": "56",
+            "name": "Example Corp"
+          },
+          "team": {
+            "id": "78",
+            "name": "Field Marketing"
+          },
+          "credential": {
+            "type": "api_key",
+            "name": "Zapier production",
+            "hint": "sendoso_live_AbCd…a1b2",
+            "scopes": [],
+            "created_at": "2026-09-23T17:04:12Z"
+          }
+        }
+      },
+      "ProblemFieldError": {
+        "type": "object",
+        "description": "One request field at fault in a refused request. A body field is named in `pointer` and a query parameter in `parameter`; the other is `null`.",
+        "properties": {
+          "pointer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A JSON Pointer (RFC 6901) to the body field, such as `/recipient/email`. An empty string points at the whole body. `null` when the field is a query parameter."
+          },
+          "parameter": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The query parameter's name, such as `limit` or `updated_at[gte]`. `null` when the field is in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable, machine-readable reason for this field, from one registered list: a generic code (`required`, `invalid_format`, `invalid_value`, `out_of_range`, `too_long`, `not_allowed`, `not_found`) or a domain code such as `campaign_not_sendable`.",
+            "x-extensible-enum": [
+              "required",
+              "invalid_format",
+              "invalid_value",
+              "out_of_range",
+              "too_long",
+              "not_allowed",
+              "not_found",
+              "amount_not_offered",
+              "campaign_not_sendable"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable explanation for this field."
+          }
+        },
+        "required": [
+          "pointer",
+          "parameter",
+          "code",
+          "message"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "pointer": "/recipient/email",
+          "parameter": null,
+          "code": "required",
+          "message": "This field is required."
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "description": "An RFC 9457 Problem Details error. Every v5 error response uses this shape with `application/problem+json` as its content type. `code` is the stable, machine-readable value for programmatic handling; `title` and `detail` are human-readable and must never be pattern-matched. `errors` lists the individual request fields at fault when a request is refused for its content, so a client can show the right message next to the right input.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "description": "A URI identifying the problem type. It never changes, and opening it leads to the code's entry in the developer docs."
+          },
+          "title": {
+            "type": "string",
+            "description": "A short, human-readable summary of the problem type."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status code for this occurrence of the problem."
+          },
+          "detail": {
+            "type": "string",
+            "description": "A human-readable explanation specific to this occurrence."
+          },
+          "code": {
+            "type": "string",
+            "description": "Stable, machine-readable error code.",
+            "x-extensible-enum": [
+              "spec_violation",
+              "invalid_cursor",
+              "api_key_required",
+              "invalid_api_key",
+              "api_key_revoked",
+              "api_key_expired",
+              "account_inactive",
+              "api_not_enabled",
+              "ip_not_allowed",
+              "missing_scope",
+              "forbidden",
+              "not_found",
+              "method_not_allowed",
+              "conflict",
+              "external_id_taken",
+              "idempotency_in_flight",
+              "invalid_params",
+              "insufficient_funds",
+              "idempotency_key_reuse",
+              "rate_limited",
+              "internal_error"
+            ]
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Identifier for this request, for support correlation."
+          },
+          "errors": {
+            "type": "array",
+            "description": "The request fields at fault, for `spec_violation` (400) and `invalid_params` (422) problems. Empty for every other problem.",
+            "items": {
+              "$ref": "#/components/schemas/ProblemFieldError"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code",
+          "request_id",
+          "errors"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "type": "https://app.sendoso.com/api/v5/problems/not-found",
+          "title": "Not found",
+          "status": 404,
+          "detail": "The requested resource could not be found.",
+          "code": "not_found",
+          "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+          "errors": []
+        }
+      },
+      "Team": {
+        "type": "object",
+        "description": "A team within your organization. Users belong to at most one team; campaigns are assigned to teams.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          },
+          "department": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "member_count": {
+            "type": "integer"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "department",
+          "member_count",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "78",
+          "name": "Field Marketing",
+          "department": {
+            "id": "12",
+            "name": "Marketing"
+          },
+          "member_count": 14,
+          "created_at": "2025-03-10T18:00:00Z",
+          "updated_at": "2026-09-01T12:00:00Z"
+        }
+      },
+      "TeamList": {
+        "type": "object",
+        "description": "A page of teams.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "Department": {
+        "type": "object",
+        "description": "A department within your organization. A department groups teams; a team is in at most one department.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          },
+          "team_count": {
+            "type": "integer",
+            "description": "The department's teams, not counting deleted ones."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "team_count",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "12",
+          "name": "Marketing",
+          "team_count": 3,
+          "created_at": "2025-03-10T18:00:00Z",
+          "updated_at": "2026-09-01T12:00:00Z"
+        }
+      },
+      "DepartmentList": {
+        "type": "object",
+        "description": "A page of departments.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Department"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "RequestTimestamp": {
+        "type": "string",
+        "format": "date-time",
+        "description": "An RFC 3339 time with any UTC offset.",
+        "example": "2026-09-25T08:00:00-07:00"
+      },
+      "TeamSummary": {
+        "type": "object",
+        "description": "A team within your organization, in brief.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "78",
+          "name": "Field Marketing"
+        }
+      },
+      "User": {
+        "type": "object",
+        "description": "A person in your organization who can sign in to Sendoso.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "first_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "job_title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "description": "The name of the user's permission set, as shown in Sendoso settings (for example `admin`, `manager`, `sender`)."
+          },
+          "role_id": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The id of the user's role, as `/api/v5/roles` lists it, or `null` for a user who holds no role."
+          },
+          "status": {
+            "type": "string",
+            "description": "`active` users can sign in and send. `inactive` users belong to an account that was deactivated. `suspended` users cannot sign in or send. Deactivated users (for example through SCIM) are removed and never appear.",
+            "enum": [
+              "active",
+              "inactive",
+              "suspended"
+            ]
+          },
+          "team": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TeamSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "first_name",
+          "last_name",
+          "job_title",
+          "role",
+          "role_id",
+          "status",
+          "team",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "1234",
+          "email": "jane@example.com",
+          "first_name": "Jane",
+          "last_name": "Doe",
+          "job_title": "Field Marketing Manager",
+          "role": "manager",
+          "role_id": "301",
+          "status": "active",
+          "team": {
+            "id": "78",
+            "name": "Field Marketing"
+          },
+          "created_at": "2025-03-10T18:00:00Z",
+          "updated_at": "2026-09-01T12:00:00Z"
+        }
+      },
+      "UserList": {
+        "type": "object",
+        "description": "A page of users.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "RoleScope": {
+        "type": "string",
+        "description": "How far a role reaches: `individual` covers only the user themselves, `team` their team, `department` the teams in their department, and `organization` the whole organization.",
+        "enum": [
+          "individual",
+          "team",
+          "department",
+          "organization"
+        ]
+      },
+      "Role": {
+        "type": "object",
+        "description": "A role in your organization. A role decides what a user may do in Sendoso and how far it reaches.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "`true` for the roles every organization has: `admin`, `department_admin`, `manager` and `sender`. Other roles are custom roles your organization created."
+          },
+          "scope": {
+            "$ref": "#/components/schemas/RoleScope"
+          },
+          "member_count": {
+            "type": "integer",
+            "description": "The users who hold the role, not counting deleted ones."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "default",
+          "scope",
+          "member_count",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "301",
+          "name": "Field Ops",
+          "default": false,
+          "scope": "team",
+          "member_count": 6,
+          "created_at": "2025-03-10T18:00:00Z",
+          "updated_at": "2026-09-01T12:00:00Z"
+        }
+      },
+      "RoleList": {
+        "type": "object",
+        "description": "A page of roles.",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "Permission": {
+        "type": "object",
+        "description": "One permission and whether the role grants it.",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "A stable key for the permission, such as `user_assign_roles`."
+          },
+          "name": {
+            "type": "string",
+            "description": "The permission as Sendoso settings name it."
+          },
+          "granted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "granted"
+        ],
+        "additionalProperties": false
+      },
+      "PermissionCategory": {
+        "type": "object",
+        "description": "A group of related permissions.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "permissions"
+        ],
+        "additionalProperties": false
+      },
+      "RoleDetail": {
+        "type": "object",
+        "description": "A role with the permissions it grants, grouped by category as Sendoso settings show them.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean",
+            "description": "`true` for the roles every organization has: `admin`, `department_admin`, `manager` and `sender`. Other roles are custom roles your organization created."
+          },
+          "scope": {
+            "$ref": "#/components/schemas/RoleScope"
+          },
+          "member_count": {
+            "type": "integer",
+            "description": "The users who hold the role, not counting deleted ones."
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionCategory"
+            }
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "default",
+          "scope",
+          "member_count",
+          "permissions",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "301",
+          "name": "Field Ops",
+          "default": false,
+          "scope": "team",
+          "member_count": 6,
+          "permissions": [
+            {
+              "name": "Organization & User Management",
+              "permissions": [
+                {
+                  "key": "user_assign_roles",
+                  "name": "Assign roles to users",
+                  "granted": true
+                },
+                {
+                  "key": "team_assign",
+                  "name": "Assign teams to departments",
+                  "granted": false
+                }
+              ]
+            }
+          ],
+          "created_at": "2025-03-10T18:00:00Z",
+          "updated_at": "2026-09-01T12:00:00Z"
+        }
+      },
+      "SendStatus": {
+        "type": "string",
+        "description": "Where a send is in its life. Values group into phases, in the order they normally occur; clients must tolerate values they do not recognise.\n\n**Pending** (nothing has left Sendoso yet): `initiated` (accepted, not yet processed), `scheduled` (waiting for `send_at`), `on_hold` (needs a person; see `issues`), `discovery` (Sendoso is looking up a shipping address), `confirming_address` (the recipient has been asked to confirm an address or pick a gift).\n\n**In progress:** `order_received`, `fulfilling` (picking, packing, labelling), `shipped` (with a carrier), `sent` (digital gift emailed or texted), `opened`, `clicked`.\n\n**Successful end states:** `delivered` (carrier delivered), `redeemed` (digital gift claimed).\n\n**Unsuccessful end states:** `confirmation_canceled` (the address or gift offer was declined or lapsed), `bounced`, `expired`, `refunded`, `canceled`, `failed`, `blocked` (stopped by a sending policy or fraud control), `undeliverable`.",
+        "x-extensible-enum": [
+          "initiated",
+          "scheduled",
+          "on_hold",
+          "discovery",
+          "confirming_address",
+          "order_received",
+          "fulfilling",
+          "shipped",
+          "sent",
+          "opened",
+          "clicked",
+          "delivered",
+          "redeemed",
+          "confirmation_canceled",
+          "bounced",
+          "expired",
+          "refunded",
+          "canceled",
+          "failed",
+          "blocked",
+          "undeliverable"
+        ],
+        "example": "delivered"
+      },
+      "CampaignSummary": {
+        "type": "object",
+        "description": "The campaign a send was made from.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "123456",
+          "name": "Renewal thank-you"
+        }
+      },
+      "UserSummary": {
+        "type": "object",
+        "description": "A user in your organization, in brief.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "1234",
+          "name": "Jane Doe",
+          "email": "jane@example.com"
+        }
+      },
+      "SendIssue": {
+        "type": "object",
+        "description": "Something that stopped or slowed a send. Open issues that say `action_required` are waiting on a person in your organization: approve the send, add funds, or cancel it.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "`pending_approval` (a manager must approve), `pending_sendoso_approval` (Sendoso staff must approve), `insufficient_funds` (the payer's balance cannot cover the send), `email_invalid_format`, `email_blocked` (the recipient email is on a block list), `salesforce_unavailable`, `out_of_stock`, or `fulfillment_issue`. Clients must tolerate values they do not recognise.",
+            "x-extensible-enum": [
+              "pending_approval",
+              "pending_sendoso_approval",
+              "insufficient_funds",
+              "email_invalid_format",
+              "email_blocked",
+              "salesforce_unavailable",
+              "out_of_stock",
+              "fulfillment_issue"
+            ]
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "action_required": {
+            "type": "boolean",
+            "description": "Whether someone in your organization can resolve this issue."
+          },
+          "opened_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "closed_at": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ResponseTimestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolution": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "How a closed issue ended, `approved` or `canceled`; `null` while open.",
+            "enum": [
+              "approved",
+              "canceled",
+              null
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "open",
+          "action_required",
+          "opened_at",
+          "closed_at",
+          "resolution"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "type": "pending_approval",
+          "open": true,
+          "action_required": true,
+          "opened_at": "2026-09-23T17:04:12Z",
+          "closed_at": null,
+          "resolution": null
+        }
+      },
+      "Send": {
+        "type": "object",
+        "description": "A gift on its way to one person. A send keeps the same `id` for life; read `status` for where it is and `issues` for what is stopping it. All keys are always present; a field with no value is explicit `null`.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SendStatus"
+          },
+          "status_changed_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "campaign": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CampaignSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The campaign the send was made from; `null` for catalog sends."
+          },
+          "sender": {
+            "$ref": "#/components/schemas/UserSummary",
+            "description": "The user who made the send."
+          },
+          "on_behalf_of": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UserSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The teammate the send went out as, when the sender used Send As; the recipient sees this teammate as the sender. `null` otherwise."
+          },
+          "team": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TeamSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "object",
+            "description": "The note that travels with the gift.",
+            "properties": {
+              "body": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "subject": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Email subject line, for gifts delivered by email."
+              },
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "`email`, `sms`, or `handwritten_note`.",
+                "enum": [
+                  "email",
+                  "sms",
+                  "handwritten_note",
+                  null
+                ]
+              }
+            },
+            "required": [
+              "body",
+              "subject",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "issues": {
+            "type": "array",
+            "description": "Everything that has stopped or slowed this send, newest first. Open issues explain an `on_hold` status.",
+            "items": {
+              "$ref": "#/components/schemas/SendIssue"
+            }
+          },
+          "send_at": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ResponseTimestamp"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When a scheduled send will go out; `null` once it has started or when it was never scheduled."
+          },
+          "resend_of": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The failed or canceled send this one was re-sent from."
+          },
+          "tracker_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "This send in the Sendoso send tracker, for people."
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/ResponseTimestamp"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "status_changed_at",
+          "campaign",
+          "sender",
+          "on_behalf_of",
+          "team",
+          "message",
+          "issues",
+          "send_at",
+          "resend_of",
+          "tracker_url",
+          "created_at",
+          "updated_at"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "id": "A1B2C3D4E",
+          "status": "shipped",
+          "status_changed_at": "2026-09-24T18:12:00Z",
+          "campaign": {
+            "id": "123456",
+            "name": "Renewal thank-you"
+          },
+          "sender": {
+            "id": "1234",
+            "name": "Jane Doe",
+            "email": "jane@example.com"
+          },
+          "on_behalf_of": null,
+          "team": {
+            "id": "78",
+            "name": "Field Marketing"
+          },
+          "message": {
+            "body": "Thanks for renewing with us, John!",
+            "subject": null,
+            "type": "handwritten_note"
+          },
+          "issues": [],
+          "send_at": null,
+          "resend_of": null,
+          "tracker_url": "https://app.sendoso.com/tracker/sends/A1B2C3D4E",
+          "created_at": "2026-09-23T17:04:12Z",
+          "updated_at": "2026-09-24T18:12:00Z"
+        }
+      },
+      "bucket": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "Requests allowed per window."
+          },
+          "remaining": {
+            "type": "integer",
+            "description": "Requests left in the current window."
+          },
+          "reset": {
+            "type": "integer",
+            "description": "Unix timestamp (seconds) when the current window resets."
+          }
+        },
+        "required": [
+          "limit",
+          "remaining",
+          "reset"
+        ],
+        "additionalProperties": false
+      },
+      "RateLimit": {
+        "type": "object",
+        "description": "The caller's current standing in each rate-limit bucket. Buckets are per organization; reads and writes are metered separately so a reporting pull can never starve another integration's writes.",
+        "properties": {
+          "read": {
+            "$ref": "#/components/schemas/bucket"
+          },
+          "write": {
+            "$ref": "#/components/schemas/bucket"
+          }
+        },
+        "required": [
+          "read",
+          "write"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "bucket": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "description": "Requests allowed per window."
+              },
+              "remaining": {
+                "type": "integer",
+                "description": "Requests left in the current window."
+              },
+              "reset": {
+                "type": "integer",
+                "description": "Unix timestamp (seconds) when the current window resets."
+              }
+            },
+            "required": [
+              "limit",
+              "remaining",
+              "reset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "example": {
+          "read": {
+            "limit": 300,
+            "remaining": 298,
+            "reset": 1721318400
+          },
+          "write": {
+            "limit": 60,
+            "remaining": 60,
+            "reset": 1721318400
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request did not conform to this contract (malformed JSON, unknown or mistyped parameters, an undecodable cursor) and was rejected before reaching application code. `code` is `spec_violation`, or `invalid_cursor` for a pagination cursor the server cannot decode. For `spec_violation`, `errors` names each body field or query parameter at fault.",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/spec-violation",
+              "title": "Spec violation",
+              "status": 400,
+              "detail": "Unknown query parameters: `bogus`.",
+              "code": "spec_violation",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": [
+                {
+                  "pointer": null,
+                  "parameter": "bogus",
+                  "code": "not_allowed",
+                  "message": "This operation has no `bogus` query parameter."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "The request did not carry a usable API key. `code` says why: `api_key_required` (no key was sent), `invalid_api_key` (the key is malformed or not recognised), `api_key_revoked`, or `api_key_expired`.",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          },
+          "WWW-Authenticate": {
+            "description": "Always `Bearer`.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/api-key-revoked",
+              "title": "Api key revoked",
+              "status": 401,
+              "detail": "This API key has been revoked. Create a key to continue.",
+              "code": "api_key_revoked",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": []
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The API key is valid but this request is not allowed. `code` says why: `missing_scope` (the key lacks the scope this operation requires; `detail` names it), `account_inactive` (the account the key acts for cannot use the API; an administrator can say why), `api_not_enabled` (the v5 API has not been enabled for the organization yet), `ip_not_allowed` (the request came from an address outside the organization's IP allowlist), or `forbidden` (the acting user can see the record but may not take this action on it).",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/ip-not-allowed",
+              "title": "Ip not allowed",
+              "status": 403,
+              "detail": "This request's IP address is not in your organization's allowlist.",
+              "code": "ip_not_allowed",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": []
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "A rate limit has been exceeded: the organization's read or write bucket, or, for requests without a valid API key, the per-IP bucket. Wait `Retry-After` seconds, or poll `GET /api/v5/rate_limit` (never counted) to see the standing of each organization bucket.",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/rate-limited",
+              "title": "Rate limited",
+              "status": 429,
+              "detail": "Rate limit exceeded for the write bucket; retry after the window resets.",
+              "code": "rate_limited",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": []
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "The request failed on Sendoso's side. `code` is `internal_error`. A read is safe to retry. A write may or may not have taken effect, so check before sending it again with a new `Idempotency-Key`. If it keeps failing, contact developers@sendoso.com with the `request_id`.",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/internal-error",
+              "title": "Internal error",
+              "status": 500,
+              "detail": "The request failed unexpectedly. A read is safe to retry; a write may or may not have taken effect, so check before sending it again with a new Idempotency-Key.",
+              "code": "internal_error",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": []
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "No resource exists at this path or id, or it belongs to a different organization. Existence is never disclosed across tenancy lines.",
+        "headers": {
+          "Sendoso-Request-Id": {
+            "$ref": "#/components/headers/Sendoso-Request-Id"
+          },
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "https://app.sendoso.com/api/v5/problems/not-found",
+              "title": "Not found",
+              "status": 404,
+              "detail": "The requested resource could not be found.",
+              "code": "not_found",
+              "request_id": "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f",
+              "errors": []
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "Maximum number of items to return in this page.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25
+        },
+        "example": 25
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "description": "Opaque pagination cursor from a previous page's `next_cursor`. Echo it back verbatim to fetch the next page. Contents are undocumented and may change at any time. A cursor the server cannot decode returns `400` with code `invalid_cursor`; restart pagination without a cursor.",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "eyJ2IjoxLCJpZCI6OTEzN30"
+      }
+    }
+  }
+}

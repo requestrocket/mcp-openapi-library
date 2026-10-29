@@ -1,0 +1,338 @@
+openapi: 3.0.0
+
+servers:
+  - url: https://localhost/openbuyapi
+
+info:
+  description: An API for searching and buying items from a supplier via Open Buy
+  version: 1.1.0
+  title: Open Buy API
+  license:
+    name: TBD
+    url: 'https://localhost/license'
+
+externalDocs:
+  description: Learn more about the Open Buy API
+  url: 'http://coupa.com'
+
+components:
+  securitySchemes:
+    Authorization:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: authentication token
+  schemas:
+    AuthenticationRequest:
+      title: Authentication Request
+      description: The credentials and email to retrieve an access token.
+      type: object
+      properties:
+        credentials:
+          description: Supplier specific string to authorize the session. Examples would be a refresh token, user and password, or an authorization key.
+          type: string
+        email:
+          description: Email of user
+          type: string
+      example:
+        credentials: "423j23j2j334l4s04"
+        email: "email@coupa.com"
+    AuthenticationResult:
+      title: Authentication Result
+      description: The result of a request for authentication
+      type: object
+      properties:
+        token:
+          description: The bearer token
+          type: string
+      example:
+        token: ABC12345
+
+    Detail:
+      title: Extra Item Details
+      description: name value pairs
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    SustainabilityDetail:
+      title: Sustainability Details
+      description: sustainability attributes
+      type: object
+      properties:
+        level:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: |
+            1 - self-reported,
+            2 - third-party,
+            3 - self-reported with evidence,
+            4 - third-party with evidence
+        title:
+          type: string
+          description: sustainability attribute name
+        url:
+          type: string
+          description: url with sustainability evidence
+    ItemsResult:
+      title: Search results
+      description: The result of a search request
+      type: object
+      properties:
+        count:
+          type: integer
+          description: count of results
+        total_count:
+          type: integer
+          description: approximate total number in catalog
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+      required:
+        - count
+        - results
+      example:
+        count: 0
+        results: []
+
+    ItemResult:
+      title: Item Result
+      description: The result of a request for item data
+      type: object
+      properties:
+        item_id:
+          description: Unique item id
+          type: string
+        source_part_num:
+          description: Supplier part number
+          type: string
+        title:
+          description: Title of the item
+          type: string
+        price:
+          description: price of the item
+          type: number
+        currency:
+          description: currency of the item
+          type: string
+        uom:
+          description: unit of measure of the item
+          type: string
+        type:
+          description: Item Type (item, group). Group represents a parent of purchable items.
+          type: string
+        image:
+          description: URL to item image
+          type: string
+        thumbnail:
+          description: URL to item thumbnail
+          type: string
+        listPrice:
+          description: list price
+          type: number
+        summary:
+          description: detail description
+          type: string
+        manufacturer_name:
+          description: manufacturer name
+          type: string
+        manufacturer_part_num:
+          description: manufacturer part number
+          type: string
+        source_part_auxiliary_id:
+          description: supplier aux part number
+          type: string
+        unspsc:
+          description: unspsc
+          type: string
+        leadtime:
+          description: lead time
+          type: string
+        min_order_quantity:
+          description: minimal order quantity
+          type: number
+        max_order_quantity:
+          description: max order quantity
+          type: number
+        order_increment_quantity:
+          description: order increment number
+          type: number
+        quantity:
+          description: quantity for checkout
+          type: number
+        tableDetails:
+          description: Columns to display if shown in a table.
+          type: array
+          items:
+            type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Detail'
+        detaillinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Detail'
+        detailimages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Detail'
+        availabilityType:
+          description: Item Availability
+          type: string
+          enum: [InStock, OutOfStock, BackOrdered]
+        sustainabilityDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/SustainabilityDetail'
+      required:
+        - item_id
+        - source_part_num
+        - title
+        - price
+        - currency
+        - uom
+      example:
+            item_id: "B121212_EA"
+            source_part_num: "B121212"
+            title: "Leather Gloves - XL"
+            thumbnail: "https://localhost/thumbnail"
+            price: 100
+            currency: "USD"
+            uom: "EA"
+
+paths:
+  /authentication/v1.0.0:
+    post:
+      tags:
+        - authentication
+      summary: Authentication with supplier site
+      description: Retrieve bearer token from credentials
+      operationId: AuthenticationRequest
+      requestBody:
+        description: An authentication request used to retrieve an access token.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+
+      responses:
+        '200':
+          description: Token successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResult'
+        '400':
+          description: Invalid request parameters; we were unable to attempt retrieval.
+        '401':
+          description: Unauthorized
+        '500':
+          description: Service error during request. Please retry after sometime
+
+  /search/v1.0.0:
+    post:
+      tags:
+        - search
+      summary: Retrieve item data based on a search query
+      description: Retrieve items based on search query
+      operationId: SearchRequest
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: The search query
+          required: true
+        - in: query
+          name: page_number
+          schema:
+            type: number
+          description: Page number for results
+          required: false
+      responses:
+        '200':
+          description: Search results successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemsResult'
+        '400':
+          description: Invalid request parameters; we were unable to attempt retrieval.
+        '401':
+          description: Unauthorized
+        '500':
+          description: Service error during request. Please retry after sometime
+      security:
+        - Authorization: []
+
+  /detail/v1.0.0:
+    post:
+      tags:
+        - detail
+      summary: Retrieve item data for a specific item for detailed review
+      description: Retrieve a item based on search query
+      operationId: DetailRequest
+      parameters:
+        - in: query
+          name: item_id
+          schema:
+            type: string
+          description: The unique item id
+          required: true
+      responses:
+        '200':
+          description: Item successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResult'
+        '400':
+          description: Invalid request parameters; we were unable to attempt retrieval.
+        '401':
+          description: Unauthorized
+        '500':
+          description: Service error during request. Please retry after sometime
+      security:
+        - Authorization: []
+
+  /checkout/v1.0.0:
+    post:
+      tags:
+        - checkout
+      summary: Retrieve item data for purchase
+      description: Retrieve a item based on search query
+      operationId: CheckoutRequest
+      parameters:
+        - in: query
+          name: item_id
+          description: The unique item id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: quantity
+          description: Quantity
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResult'
+        '400':
+          description: Invalid request parameters; we were unable to attempt retrieval.
+        '401':
+          description: Unauthorized
+        '500':
+          description: Service error during request. Please retry after sometime
+      security:
+        - Authorization: []

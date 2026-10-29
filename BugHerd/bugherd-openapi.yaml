@@ -1,0 +1,2190 @@
+openapi: 3.1.0
+info:
+  title: BugHerd API v2
+  version: 2.0.0
+  contact:
+    name: BugHerd Support
+    url: https://www.bugherd.com
+    email: support@bugherd.com
+  termsOfService: https://bugherd.com/terms
+  description: |
+    ## Overview
+    The BugHerd API v2 provides programmatic access to your BugHerd account. Use it to manage projects, tasks, users, comments, attachments, and webhook subscriptions. You can also receive real-time notifications via webhooks when tasks, comments, or projects change.
+
+    ## Authentication
+    All requests require **HTTP Basic Authentication**. Use your API key as the username and the literal string `x` as the password.
+
+    ```
+    Authorization: Basic base64(api_key:x)
+    ```
+
+    Your API key is available under **Settings > General** in your BugHerd account.
+
+    ## Rate Limiting
+    - **Sustained rate:** 60 requests per minute
+    - **Burst allowance:** Up to 10 additional requests
+
+    Exceeding these limits returns a `429 Too Many Requests` response. Back off and retry after a short delay. Applications using webhooks instead of polling may request lifted rate limits.
+
+    ## Pagination
+    List endpoints return a maximum of **100 records per page**. Use the `page` query parameter to retrieve subsequent pages (starting at `1`). An empty array indicates you have reached the last page.
+
+    ## Base URL
+    All endpoint paths are relative to `https://www.bugherd.com`.
+
+    ## Security
+    All API requests must use HTTPS.
+
+    ## Important Notes
+    Custom columns mean the `status_id` field can return values exceeding 5, indicating custom column IDs. The `status` field will show the custom column name. Integrations relying on fixed status values should account for this.
+
+    ## Delete Operations
+    Delete (`DELETE`) is only supported on certain resources: **projects**, **attachments**, and **webhooks**. Tasks, columns, comments, and users cannot be deleted via the API - use the BugHerd UI instead.
+
+    ## Terminology
+    The application now refers to guests as **clients** - this is a cosmetic change and does not affect API endpoints or accepted data.
+
+    ## Webhooks
+    Webhooks enable real-time synchronization between BugHerd and external applications. A `410 Gone` HTTP response from your endpoint will automatically remove the webhook.
+
+    ## MCP (Model Context Protocol)
+
+    You can connect BugHerd to MCP-compatible AI tools using a remote MCP server or a local stdio bridge.
+
+    ### Option 1: Direct remote MCP setup
+
+    Use this option if your AI tool supports remote HTTP or Streamable HTTP MCP servers.
+
+    **Server settings**
+
+    | Setting | Value |
+    | --- | --- |
+    | Name | BugHerd |
+    | URL | `https://mcp.bugherd.com/mcp` |
+    | Transport | HTTP / Streamable HTTP |
+
+    **Authenticate BugHerd**
+
+    1. Add the server in your AI tool.
+    2. Open the BugHerd authorization page when prompted.
+    3. Log in if needed.
+    4. Select the organization you want the client to access.
+    5. Click **Allow**.
+    6. Return to your AI tool.
+
+    **Test the connection**
+
+    Ask:
+
+    `List my BugHerd projects`
+
+    If your projects are returned, the connection is working.
+
+    ### Option 2: Local setup using `mcp-remote`
+
+    Use this option if your AI tool only supports local stdio MCP servers.
+
+    `mcp-remote` acts as a local bridge between stdio-only MCP clients and remote MCP servers, including OAuth-enabled servers.
+
+    **Additional prerequisites**
+
+    - Node.js installed
+    - `npx` available in your terminal
+    - An MCP-compatible client that supports local command-based MCP servers
+
+    Check Node.js and npx:
+
+    ```bash
+    node -v
+    npx -v
+    ```
+
+    **Generic MCP configuration**
+
+    Add the following to your client's MCP configuration:
+
+    ```json
+    {
+      "mcpServers": {
+        "BugHerd": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote@latest",
+            "https://mcp.bugherd.com/mcp"
+          ],
+          "env": {}
+        }
+      }
+    }
+    ```
+
+    Save the configuration and restart your AI tool.
+
+servers:
+  - url: https://www.bugherd.com
+    description: Production
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: |
+        Use your BugHerd API key as the username and the literal string `x` as the password.
+        Your API key can be found in Account Settings.
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4561
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        display_name:
+          type: string
+          example: Jane Smith
+        avatar_url:
+          type: string
+          format: uri
+          example: https://bugherd.com/avatars/jane.png
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 100
+        name:
+          type: string
+          example: Acme Corp
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1000
+        name:
+          type: string
+          example: My Website
+        created_at:
+          type: string
+          description: Project creation timestamp
+          example: "2011-02-06 23:43:07"
+        tasks:
+          type: boolean
+          description: Whether the project has any tasks
+          example: true
+        devurl:
+          type: string
+          format: uri
+          example: https://www.example.com
+        is_active:
+          type: boolean
+          example: true
+        is_public:
+          type: boolean
+          example: false
+        has_custom_columns:
+          type: boolean
+          example: false
+        guests_see_guests:
+          type: boolean
+          example: false
+        owner_name:
+          type: string
+          example: Alan Downie
+        sites:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ["http://bugherd.com/"]
+        api_key:
+          type: string
+          example: your-project-api-key
+        allow_guests_change_task_status:
+          type: boolean
+          example: true
+        assign_guests:
+          type: boolean
+          example: true
+        allow_project_summary_email:
+          type: boolean
+          example: true
+        allow_task_done_email:
+          type: boolean
+          example: true
+        allow_project_owner_notifications:
+          type: boolean
+          example: false
+        change_guest_default_column:
+          type: boolean
+          example: false
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        guests:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Column'
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Globally unique task ID
+          example: 98765
+        local_task_id:
+          type: integer
+          description: Project-scoped task number (e.g. #42)
+          example: 42
+        project_id:
+          type: integer
+          example: 1000
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T09:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-20T14:45:00Z"
+        closed_at:
+          type: ["string", "null"]
+          format: date-time
+          example: null
+        deleted_at:
+          type: ["string", "null"]
+          format: date-time
+          example: null
+        title:
+          type: string
+          example: Button not aligned on mobile
+        description:
+          type: string
+          example: The submit button overlaps the footer on screens under 375px.
+        status:
+          type: string
+          description: |
+            Status name. Built-in values: `backlog`, `todo`, `doing`, `done`, `closed`. Custom column names also appear here.
+          example: todo
+        status_id:
+          type: ["integer", "null"]
+          description: |
+            0 = backlog, 1 = todo, 2 = doing, 4 = done, 5 = closed. Values > 5 indicate a custom column.
+          example: 1
+        priority:
+          type: string
+          enum: [not set, critical, important, normal, minor]
+          example: normal
+        priority_id:
+          type: integer
+          description: 0 = not set, 1 = critical, 2 = important, 3 = normal, 4 = minor
+          example: 3
+        site:
+          type: string
+          description: The website the task was logged on
+          example: https://www.example.com
+        url:
+          type: string
+          description: The specific page path the task was logged on
+          example: /checkout
+        tag_names:
+          type: array
+          items:
+            type: string
+          example: [ui, mobile]
+        external_id:
+          type: ["string", "null"]
+          description: Optional external reference set via API
+          example: JIRA-123
+        requester_email:
+          type: ["string", "null"]
+          format: email
+          example: reporter@example.com
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: []
+        screenshot_url:
+          type: ["string", "null"]
+          format: uri
+          example: https://bugherd.com/screenshots/abc.png
+        secret_link:
+          type: string
+          format: uri
+          description: Unguessable public URL - no login required
+          example: https://bugherd.com/tasks/secret/abc123
+        admin_link:
+          type: string
+          format: uri
+          description: Task board URL - login required
+          example: https://bugherd.com/projects/1000/tasks/42
+        assigned_to:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: "null"
+        requester:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: "null"
+        project_name:
+          type: string
+          example: BugHerd
+        due_at:
+          type: ["string", "null"]
+          format: date-time
+          example: null
+        assignee_ids:
+          type: array
+          items:
+            type: integer
+          example: []
+        assignees:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        assigned_to_id:
+          type: ["integer", "null"]
+          example: null
+        requester_id:
+          type: ["integer", "null"]
+          example: 851
+        column_id:
+          type: ["integer", "null"]
+          example: null
+        updater:
+          oneOf:
+            - $ref: '#/components/schemas/User'
+            - type: "null"
+        metadata:
+          type: ["object", "null"]
+          example: {"rails_page": "pages#home", "user_id": "851"}
+        screenshot_data:
+          type: ["object", "null"]
+          example: {"screenshot_width": 1214, "screenshot_height": 1214, "screenshot_pin_x": 633, "screenshot_pin_y": 514}
+        fullstory_session_url:
+          type: ["string", "null"]
+          example: null
+        logrocket_session_url:
+          type: ["string", "null"]
+          example: null
+        requester_os:
+          type: ["string", "null"]
+          example: Mac
+        requester_browser:
+          type: ["string", "null"]
+          example: Chrome 26
+        requester_browser_size:
+          type: ["string", "null"]
+          example: "1214 x 806 px"
+        requester_resolution:
+          type: ["string", "null"]
+          example: "1440 x 900 px"
+        selector_info:
+          type: ["object", "null"]
+          example: {"path": "html>body...", "html": "<img...>", "version": 2}
+        logs:
+          type: ["object", "null"]
+          example: null
+
+    Column:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 55
+        name:
+          type: string
+          example: In Review
+        project_id:
+          type: integer
+          example: 1000
+        position:
+          type: integer
+          description: Display order (0-indexed)
+          example: 2
+        tasks_count:
+          type: integer
+          example: 31
+        created_at:
+          type: string
+          format: date-time
+          example: "2020-03-24T02:48:35.340Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2020-03-24T02:48:35.340Z"
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 8801
+        text:
+          type: string
+          example: I can reproduce this on Chrome 120.
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-16T10:00:00Z"
+        user_id:
+          type: integer
+          example: 4561
+        is_private:
+          type: boolean
+          example: false
+
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 331
+        file_name:
+          type: string
+          example: screenshot.png
+        url:
+          type: string
+          format: uri
+          example: https://bugherd.com/attachments/screenshot.png
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T09:35:00Z"
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 22649
+        target_url:
+          type: string
+          format: uri
+          example: https://app.example.com/api/bugherd_sync/task_create
+        event:
+          type: string
+          enum: [project_create, task_create, task_update, comment, task_destroy]
+          example: task_create
+        project_id:
+          type: ["integer", "null"]
+          description: If null, the webhook fires for all projects
+          example: 1000
+        project_name:
+          type: ["string", "null"]
+          example: null
+        success_count:
+          type: integer
+          example: 25161
+        error_count:
+          type: ["integer", "null"]
+          example: 21052
+        last_error_code:
+          type: ["integer", "null"]
+          example: 404
+        last_error_at:
+          type: ["string", "null"]
+          format: date-time
+          example: "2026-03-26T00:39:45.720Z"
+        first_error_at:
+          type: ["string", "null"]
+          format: date-time
+          example: "2020-12-03T06:17:10.456Z"
+        first_success_at:
+          type: ["string", "null"]
+          format: date-time
+          example: "2020-02-13T05:01:06.203Z"
+        last_success_at:
+          type: ["string", "null"]
+          format: date-time
+          example: "2026-03-12T04:39:37.627Z"
+
+security:
+  - basicAuth: []
+
+tags:
+  - name: Organization
+    description: Retrieve account-level details for your BugHerd organization.
+  - name: Users
+    description: List and filter members, guests, and their associated tasks and projects.
+  - name: Projects
+    description: Create, update, delete, and list projects. Manage project membership.
+  - name: Tasks
+    description: Create, update, delete, move, and list tasks within projects.
+  - name: Columns
+    description: Manage custom kanban columns on a project's taskboard.
+  - name: Comments
+    description: Add and list comments on tasks.
+  - name: Attachments
+    description: Upload, attach, and manage files on tasks.
+  - name: Webhooks
+    description: Subscribe to real-time event notifications for task, comment, and project changes.
+paths:
+
+  # ── Organization ──────────────────────────────────────────────────────────────
+
+  /api_v2/organization.json:
+    get:
+      tags: [Organization]
+      summary: Show Organization
+      description: Returns top-level details about your BugHerd organization, including its name and ID.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Organization details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization:
+                    $ref: '#/components/schemas/Organization'
+
+  # ── Users ─────────────────────────────────────────────────────────────────────
+
+  /api_v2/users.json:
+    get:
+      tags: [Users]
+      summary: List Users
+      description: Returns all users (both team members and guests) in your organization. Use `updated_since` to retrieve only recently changed records.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: updated_since
+          in: query
+          schema: { type: string, format: date-time }
+          description: Filter to users updated after this timestamp
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  /api_v2/users/members.json:
+    get:
+      tags: [Users]
+      summary: List Members
+      description: Returns only team members (non-guest users) in your organization.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  /api_v2/users/guests.json:
+    get:
+      tags: [Users]
+      summary: List Guests
+      description: Returns all guest users across your organization. Guests are external collaborators who have been invited to specific projects.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of guests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  '/api_v2/users/{user_id}/tasks.json':
+    get:
+      tags: [Users]
+      summary: List User Tasks
+      description: Returns all tasks assigned to a specific user across all projects. Supports filtering by date, priority, tag, and assignee.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: updated_since
+          in: query
+          schema: { type: string, format: date-time }
+        - name: created_since
+          in: query
+          schema: { type: string, format: date-time }
+          description: Return tasks created after this timestamp
+        - name: priority
+          in: query
+          schema: { type: string, enum: [not set, critical, important, normal, minor] }
+          description: Filter by priority
+        - name: tag
+          in: query
+          schema: { type: string }
+          description: Filter by tag name
+        - name: assigned_to_id
+          in: query
+          schema: { type: integer }
+          description: Filter by assignee user ID
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of tasks for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  '/api_v2/users/{user_id}/projects.json':
+    get:
+      tags: [Users]
+      summary: List User Projects
+      description: Returns all projects that a specific user belongs to. Use `is_active` to filter by project status.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: is_active
+          in: query
+          schema: { type: boolean }
+          description: Filter by active/inactive status
+        - name: created_since
+          in: query
+          schema: { type: string, format: date-time }
+          description: Return projects created after this timestamp
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of projects for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  # ── Projects ──────────────────────────────────────────────────────────────────
+
+  /api_v2/projects.json:
+    get:
+      tags: [Projects]
+      summary: List Projects
+      description: Returns all projects in your organization, including both active and inactive projects.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+    post:
+      tags: [Projects]
+      summary: Create Project
+      description: Creates a new project. The project starts with no members or guests -- use the Add Member and Add Guest endpoints to populate the team.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [project]
+              properties:
+                project:
+                  type: object
+                  required: [name, devurl]
+                  properties:
+                    name:
+                      type: string
+                      description: Project name
+                    devurl:
+                      type: string
+                      format: uri
+                      description: Primary website URL for the project
+                    is_active:
+                      type: boolean
+                      default: true
+                    is_public:
+                      type: boolean
+                      default: false
+                      description: Enable public feedback on the project
+                    guests_see_guests:
+                      type: boolean
+                      default: false
+                      description: Allow guests to see other guests' feedback
+            example:
+              project:
+                name: My API Website
+                devurl: https://www.example.com
+                is_active: true
+                is_public: false
+                guests_see_guests: true
+      responses:
+        '201':
+          description: Created project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+
+  /api_v2/projects/active.json:
+    get:
+      tags: [Projects]
+      summary: List Active Projects
+      description: Returns only active projects. This is a convenience shortcut equivalent to filtering the List Projects endpoint by active status.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of active projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  '/api_v2/projects/{project_id}.json':
+    get:
+      tags: [Projects]
+      summary: Show Project
+      description: Returns full details for a single project, including its members, guests, and column configuration.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+    put:
+      tags: [Projects]
+      summary: Update Project
+      description: Updates a project's settings. Only include the fields you want to change.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project:
+                  type: object
+                  properties:
+                    name: { type: string }
+                    devurl: { type: string, format: uri }
+                    is_active: { type: boolean }
+                    is_public: { type: boolean }
+                    has_custom_columns: { type: boolean }
+                    guests_see_guests: { type: boolean }
+            example:
+              project:
+                name: My Updated Website
+                devurl: https://www.example-updated.com
+                is_active: true
+                is_public: false
+                has_custom_columns: true
+                guests_see_guests: true
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+    delete:
+      tags: [Projects]
+      summary: Delete Project
+      description: Permanently deletes the project and all associated data. This action cannot be undone.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  '/api_v2/projects/{project_id}/add_member.json':
+    post:
+      tags: [Projects]
+      summary: Add Member to Project
+      description: Adds one or more existing organization members to a project. The user must already belong to your organization.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: integer
+                  description: User ID to add as a member. Pass an array of IDs to add multiple users.
+                  example: 4561
+            example:
+              user_id: 4561
+      responses:
+        '200':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+
+  '/api_v2/projects/{project_id}/add_guest.json':
+    post:
+      tags: [Projects]
+      summary: Add Guest to Project
+      description: Adds a guest to a project. Provide either a `user_id` for an existing user or an `email` to send a new invitation.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  description: ID of an existing user to add as a guest
+                  example: 123
+                email:
+                  type: string
+                  format: email
+                  description: Alternative to user_id - invite by email address
+                  example: guest@example.com
+            example:
+              user_id: 123
+      responses:
+        '200':
+          description: Guest added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+
+  # ── Tasks ─────────────────────────────────────────────────────────────────────
+
+  '/api_v2/projects/{project_id}/tasks.json':
+    get:
+      tags: [Tasks]
+      summary: List Tasks
+      description: Returns tasks for a project. Supports filtering by status, priority, tag, assignee, external ID, and date range.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: updated_since
+          in: query
+          schema: { type: string, format: date-time }
+          description: Return tasks updated after this timestamp
+        - name: created_since
+          in: query
+          schema: { type: string, format: date-time }
+          description: Return tasks created after this timestamp
+        - name: status
+          in: query
+          schema: { type: string }
+          description: Filter by status name (e.g. `todo`, `doing`)
+        - name: priority
+          in: query
+          schema: { type: string, enum: [not set, critical, important, normal, minor] }
+        - name: tag
+          in: query
+          schema: { type: string }
+          description: Filter by tag name
+        - name: assigned_to_id
+          in: query
+          schema: { type: integer }
+        - name: external_id
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+    post:
+      tags: [Tasks]
+      summary: Create Task
+      description: |
+        Creates a new task in a project.
+
+        **Requester and assignee:** The requester and assignee can each be specified by user ID or email address.
+        - `assigned_to_email` - the user must be a current project member
+        - `requester_email` - accepts any email address
+
+        **Status:** Omitting the `status` field or setting it to `null` sends the task to the Feedback panel.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  type: object
+                  properties:
+                    description: { type: string }
+                    priority:
+                      type: string
+                      enum: [not set, critical, important, normal, minor]
+                    status: { type: string }
+                    requester_id: { type: integer }
+                    requester_email: { type: string, format: email }
+                    assigned_to_id: { type: integer }
+                    assigned_to_email: { type: string, format: email }
+                    tag_names:
+                      type: array
+                      items: { type: string }
+                    external_id: { type: string }
+            example:
+              task:
+                description: Login button not responding on Safari
+                priority: important
+                status: backlog
+                requester_email: reporter@example.com
+                tag_names: [safari, auth]
+      responses:
+        '201':
+          description: Created task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+
+  '/api_v2/projects/{project_id}/tasks/feedback.json':
+    get:
+      tags: [Tasks]
+      summary: List Feedback Tasks
+      description: Returns only tasks in the backlog (feedback) column for a project. Use this to review unprocessed bug reports and feedback.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of feedback tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  '/api_v2/projects/{project_id}/tasks/archive.json':
+    get:
+      tags: [Tasks]
+      summary: List Archived Tasks
+      description: Returns tasks that have been closed or archived in a project. These tasks no longer appear on the active taskboard.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: List of archived tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+
+  '/api_v2/projects/{project_id}/tasks/taskboard.json':
+    get:
+      tags: [Tasks]
+      summary: List Taskboard Tasks
+      description: Returns all active (non-archived) tasks for a project, mirroring what appears on the taskboard in the BugHerd UI.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: Taskboard tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+
+  '/api_v2/tasks/{task_id}.json':
+    get:
+      tags: [Tasks]
+      summary: Show Task (Global)
+      description: Returns a task by its globally unique ID. Use this when you have a task ID but not the project ID.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+          description: The globally unique task ID
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+
+  '/api_v2/projects/{project_id}/tasks/{task_id}.json':
+    get:
+      tags: [Tasks]
+      summary: Show Task
+      description: Returns full details for a single task within a project. Returns complete task details including metadata, browser info, and screenshot data.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+    put:
+      tags: [Tasks]
+      summary: Update Task
+      description: |
+        Updates one or more fields on a task. Only include the fields you want to change.
+
+        **Unassigning users:**
+        - Set `assigned_to_id` to `null` to unassign all users
+        - Use `unassign_user` with a user ID to remove a specific user
+
+        **Moving tasks between columns:**
+        - Set `status` to a column name (e.g. `todo`, `doing`, or a custom column name)
+        - Set `status` to `feedback` to return the task to the Feedback panel
+
+        **Audit trail:**
+        Include `updater_email` to attribute the change to a specific user. This is for audit purposes only - permissions are not enforced via the API.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  type: object
+                  properties:
+                    description: { type: string }
+                    priority:
+                      type: string
+                      enum: [not set, critical, important, normal, minor]
+                    status: { type: string }
+                    assigned_to_id: { type: ["integer", "null"] }
+                    assigned_to_email: { type: string, format: email }
+                    unassign_user: { type: integer }
+                    tag_names:
+                      type: array
+                      items: { type: string }
+                    external_id: { type: string }
+                    site: { type: string, format: uri }
+                    url: { type: string }
+                    updater_email:
+                      type: string
+                      format: email
+                      description: Email of the user to attribute this change to (for audit)
+            example:
+              task:
+                status: doing
+                priority: critical
+                assigned_to_id: 4561
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      description: Permanently deletes the task. This action cannot be undone.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  '/api_v2/projects/{project_id}/local_tasks/{local_task_id}.json':
+    get:
+      tags: [Tasks]
+      summary: Show Task by Local ID
+      description: |
+        Returns a task by its project-scoped local ID (the `#number` shown in the BugHerd UI).
+        This is useful when you have the task number from a URL like `/projects/123/tasks/42`.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: local_task_id
+          in: path
+          required: true
+          schema: { type: integer }
+          description: The project-scoped task number (e.g. 42)
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+
+  '/api_v2/projects/{project_id}/move_tasks.json':
+    post:
+      tags: [Tasks]
+      summary: Move Tasks
+      description: |
+        Moves one or more tasks from the current project to a different destination project. Task IDs remain the same after the move.
+
+        **Important:** `task_ids` must contain `local_task_id` values (the project-scoped task number), NOT the globally unique task ID.
+
+        > **Note:** This endpoint is documented in the BugHerd API but may not be available for all accounts. If you receive a 404 response, contact BugHerd support.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+          description: The source project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [destination_project_id, task_ids]
+              properties:
+                destination_project_id:
+                  type: integer
+                  description: The project to move tasks into
+                task_ids:
+                  type: array
+                  items: { type: integer }
+                  description: Array of task IDs to move
+            example:
+              destination_project_id: 2000
+              task_ids: [98765, 98766, 98767]
+      responses:
+        '200':
+          description: Tasks moved successfully
+
+  # ── Columns ───────────────────────────────────────────────────────────────────
+
+  '/api_v2/projects/{project_id}/columns.json':
+    get:
+      tags: [Columns]
+      summary: List Columns
+      description: |
+        Returns all kanban columns for a project. Includes both built-in columns (backlog, todo, doing, done) and any custom columns.
+
+        > **Known issue:** The `tasks_count` field may return incorrect values (including negative numbers) for some columns.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of columns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Column'
+    post:
+      tags: [Columns]
+      summary: Create Column
+      description: Creates a new custom kanban column in a project. The column is appended to the end of the board.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                column:
+                  type: object
+                  required: [name]
+                  properties:
+                    name: { type: string }
+            example:
+              column:
+                name: In Review
+      responses:
+        '201':
+          description: Created column
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  column:
+                    $ref: '#/components/schemas/Column'
+
+  '/api_v2/projects/{project_id}/columns/{column_id}.json':
+    get:
+      tags: [Columns]
+      summary: Show Column
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: column_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Column details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  column:
+                    $ref: '#/components/schemas/Column'
+    put:
+      tags: [Columns]
+      summary: Update Column
+      description: Updates a custom column's name.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: column_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                column:
+                  type: object
+                  properties:
+                    name: { type: string }
+            example:
+              column:
+                name: QA Testing
+      responses:
+        '200':
+          description: Updated column
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  column:
+                    $ref: '#/components/schemas/Column'
+    delete:
+      tags: [Columns]
+      summary: Delete Column
+      description: Permanently deletes a column. This action cannot be undone. A column cannot be deleted if it contains tasks, or if it is the last column in the project.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: column_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Column deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  # ── Comments ──────────────────────────────────────────────────────────────────
+
+  '/api_v2/projects/{project_id}/tasks/{task_id}/comments.json':
+    get:
+      tags: [Comments]
+      summary: List Comments
+      description: Returns all comments on a task.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+    post:
+      tags: [Comments]
+      summary: Create Comment
+      description: |
+        Adds a comment to a task. Identify the commenter by `user_id` or `email`.
+
+        **Visibility:** Set `is_private: true` to make the comment visible to team members only, not guests/clients.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: object
+                  required: [text]
+                  properties:
+                    text: { type: string }
+                    user_id: { type: integer }
+                    email:
+                      type: string
+                      format: email
+                      description: Alternative to user_id - looks up user by email
+                    is_private:
+                      type: boolean
+                      default: false
+            example:
+              comment:
+                text: I can reproduce this on Chrome 120.
+                user_id: 4561
+                is_private: false
+      responses:
+        '201':
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+    delete:
+      tags: [Comments]
+      summary: Delete Comment
+      description: Permanently deletes a comment. This action cannot be undone.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: comment_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Comment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  # ── Attachments ───────────────────────────────────────────────────────────────
+
+  '/api_v2/projects/{project_id}/tasks/{task_id}/attachments.json':
+    get:
+      tags: [Attachments]
+      summary: List Attachments
+      description: Returns all file attachments on a task.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of attachments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Attachment'
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                        description: Total number of records across all pages
+                        example: 42
+    post:
+      tags: [Attachments]
+      summary: Create Attachment (from URL)
+      description: Attaches a file to a task by providing a publicly accessible URL. BugHerd downloads the file from the URL and stores a copy. For direct file uploads, use the Upload Attachment endpoint instead.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attachment:
+                  type: object
+                  required: [file_name, url]
+                  properties:
+                    file_name: { type: string }
+                    url: { type: string, format: uri }
+            example:
+              attachment:
+                file_name: resolution.gif
+                url: https://i.imgur.com/U9h3jZI.gif
+      responses:
+        '201':
+          description: Created attachment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment:
+                    $ref: '#/components/schemas/Attachment'
+
+  '/api_v2/projects/{project_id}/tasks/{task_id}/attachments/{attachment_id}.json':
+    get:
+      tags: [Attachments]
+      summary: Show Attachment
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: attachment_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Attachment details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment:
+                    $ref: '#/components/schemas/Attachment'
+    delete:
+      tags: [Attachments]
+      summary: Delete Attachment
+      description: Permanently removes the attachment. This action cannot be undone.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: attachment_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Attachment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+  '/api_v2/projects/{project_id}/tasks/{task_id}/attachments/upload':
+    post:
+      tags: [Attachments]
+      summary: Upload Attachment
+      description: |
+        Uploads a file directly to a task using multipart form data.
+
+        **When to use:** Use this when you have the file locally. Use Create Attachment (from URL) when the file is already hosted online.
+
+        **Limits:** Maximum request duration is approximately 30 seconds. For larger files, use the URL-based Create Attachment endpoint instead.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: task_id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Uploaded attachment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment:
+                    $ref: '#/components/schemas/Attachment'
+
+  # ── Webhooks ──────────────────────────────────────────────────────────────────
+
+  /api_v2/webhooks.json:
+    get:
+      tags: [Webhooks]
+      summary: List Webhooks
+      description: Returns all webhooks configured for your organization. Use this to verify which events are being monitored. Includes delivery statistics and error details.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhooks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Webhook'
+    post:
+      tags: [Webhooks]
+      summary: Create Webhook
+      description: |
+        Creates a new webhook subscription. When the specified event occurs, BugHerd sends a POST request to your `target_url` with the relevant payload.
+
+        **Supported events:** `project_create`, `task_create`, `task_update`, `comment`, `task_destroy`. Create separate webhook entries for each event type you want to monitor.
+
+        **Project scope:** Omit `project_id` to receive events for all projects.
+
+        **Auto-removal:** A `410 Gone` response from your target URL will cause BugHerd to automatically remove the webhook.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_url, event]
+              properties:
+                target_url:
+                  type: string
+                  format: uri
+                  description: The endpoint that will receive the webhook POST
+                event:
+                  type: string
+                  enum: [project_create, task_create, task_update, comment, task_destroy]
+                project_id:
+                  type: integer
+                  description: Scope the webhook to a specific project. Omit for all projects.
+            example:
+              target_url: https://app.example.com/api/bugherd_sync/task_create
+              event: task_create
+              project_id: 1000
+      responses:
+        '201':
+          description: Created webhook
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhook:
+                    $ref: '#/components/schemas/Webhook'
+
+  '/api_v2/webhooks/{webhook_id}.json':
+    delete:
+      tags: [Webhooks]
+      summary: Delete Webhook
+      description: Removes a webhook subscription. BugHerd will stop sending events to the target URL immediately.
+      security:
+        - basicAuth: []
+      parameters:
+        - name: webhook_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Webhook deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+
+webhooks:
+  task_create:
+    post:
+      tags: [Webhooks]
+      summary: Task Created (Webhook Callback)
+      description: |
+        BugHerd sends this POST request to your registered `target_url` whenever a new task is created in a project. The request body contains the full task object. Your server should respond with any `2xx` status code to acknowledge receipt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  $ref: '#/components/schemas/Task'
+            example:
+              task:
+                id: 98765
+                local_task_id: 42
+                project_id: 1000
+                title: Button not aligned on mobile
+                description: The submit button overlaps the footer on screens under 375px.
+                status: backlog
+                status_id: 0
+                priority: normal
+                priority_id: 3
+                created_at: "2024-01-15T09:30:00Z"
+                updated_at: "2024-01-15T09:30:00Z"
+                closed_at: null
+                deleted_at: null
+                tag_names: [ui, mobile]
+                external_id: null
+                requester_email: reporter@example.com
+                screenshot_url: https://bugherd.com/screenshots/abc.png
+                secret_link: https://bugherd.com/tasks/secret/abc123
+                admin_link: https://bugherd.com/projects/1000/tasks/42
+                assigned_to: null
+                requester:
+                  id: 4561
+                  email: reporter@example.com
+                  display_name: Jane Smith
+                  avatar_url: https://bugherd.com/avatars/jane.png
+      responses:
+        '200':
+          description: Webhook acknowledged
+
+  task_update:
+    post:
+      tags: [Webhooks]
+      summary: Task Updated (Webhook Callback)
+      description: |
+        BugHerd sends this POST request to your registered `target_url` whenever a task is updated. This includes status changes, priority changes, reassignment, tag edits, or any other field modification. Your server should respond with any `2xx` status code to acknowledge receipt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  $ref: '#/components/schemas/Task'
+            example:
+              task:
+                id: 98765
+                local_task_id: 42
+                project_id: 1000
+                title: Button not aligned on mobile
+                status: doing
+                status_id: 2
+                priority: important
+                priority_id: 2
+                updated_at: "2024-01-20T14:45:00Z"
+                assigned_to:
+                  id: 4561
+                  email: dev@example.com
+                  display_name: Alex Dev
+                  avatar_url: https://bugherd.com/avatars/alex.png
+      responses:
+        '200':
+          description: Webhook acknowledged
+
+  task_destroy:
+    post:
+      tags: [Webhooks]
+      summary: Task Deleted (Webhook Callback)
+      description: |
+        BugHerd sends this POST request to your registered `target_url` whenever a task is permanently deleted. The payload includes the task ID and deletion timestamp. Your server should respond with any `2xx` status code to acknowledge receipt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  $ref: '#/components/schemas/Task'
+            example:
+              task:
+                id: 98765
+                local_task_id: 42
+                project_id: 1000
+                deleted_at: "2024-01-22T08:00:00Z"
+      responses:
+        '200':
+          description: Webhook acknowledged
+
+  comment:
+    post:
+      tags: [Webhooks]
+      summary: Comment Added (Webhook Callback)
+      description: |
+        BugHerd sends this POST request to your registered `target_url` whenever a comment is added to a task. The payload includes both the comment and the parent task. Your server should respond with any `2xx` status code to acknowledge receipt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  $ref: '#/components/schemas/Comment'
+                task:
+                  $ref: '#/components/schemas/Task'
+            example:
+              comment:
+                id: 8801
+                text: I can reproduce this on Chrome 120.
+                created_at: "2024-01-16T10:00:00Z"
+                user_id: 4561
+                is_private: false
+              task:
+                id: 98765
+                local_task_id: 42
+                project_id: 1000
+      responses:
+        '200':
+          description: Webhook acknowledged
+
+  project_create:
+    post:
+      tags: [Webhooks]
+      summary: Project Created (Webhook Callback)
+      description: |
+        BugHerd sends this POST request to your registered `target_url` whenever a new project is created in your organization. The payload contains the full project object. Your server should respond with any `2xx` status code to acknowledge receipt.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project:
+                  $ref: '#/components/schemas/Project'
+            example:
+              project:
+                id: 1001
+                name: New Campaign Site
+                devurl: https://www.newcampaign.com
+                is_active: true
+                is_public: false
+                has_custom_columns: false
+                guests_see_guests: false
+      responses:
+        '200':
+          description: Webhook acknowledged

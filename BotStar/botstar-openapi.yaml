@@ -1,0 +1,1582 @@
+openapi: 3.0.0
+
+info:
+  title: BotStar Public API
+  description: >
+    <div id="info-description">
+      <div>
+        <span id="guide-swagger">How to use Public API swagger?</span>
+      </div>
+      <div>
+        <span id="guide-bot-id">How to find bot ID, user ID?</span>
+      </div>
+      <div>
+        <span id="guide-cms-id">How to find CMS Entity ID, Entity Item ID?</span>
+      </div>
+      <div>
+        <span id="guide-bot-language-config">How to find Bot Language Configuration?</span>
+      </div>
+    </div>
+  version: 1.0.0
+
+servers:
+  - url: https://apis.staging.botstar.com/v1
+    description: Base URL
+
+security:
+  - BearerAuth: []
+
+# externalDocs:
+#   url: 'https://botstar.com'
+#   description: BotStar's Homepage
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    botId:
+      in: path
+      name: botId
+      description: Your bot ID
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    attributeId:
+      in: path
+      name: attributeId
+      description: Bot Attribute ID
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    userId:
+      in: path
+      name: userId
+      description: Your user ID
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    entityId:
+      in: path
+      name: entityId
+      description: Entity ID
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    entityItemId:
+      in: path
+      name: entityItemId
+      description: Entity Item ID
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    env:
+      in: query
+      name: env
+      schema:
+        type: string
+        description: Enter env here.
+        enum: ['draft', 'draft,live']
+        default:
+    envGet:
+      in: query
+      name: env
+      schema:
+        type: string
+        description: Enter env here.
+        enum: ['draft', 'live']
+        default:
+    page:
+      in: query
+      name: page
+      required: false
+      description: number
+      schema:
+        type: number
+        minimum: 1
+        default: 1
+    limit:
+      in: query
+      name: limit
+      required: false
+      description: The numbers of items to return.
+      schema:
+        type: number
+        minimum: 1
+        default: 100
+    unique_names:
+      in: query
+      name: unique_names
+      required: false
+      description: The list of Entity field unique_names
+      schema:
+        type: string
+        minLength: 1
+        example: field1,field2
+    name:
+      in: query
+      name: name
+      required: false
+      description: The name of Entity Item
+      schema:
+        type: string
+        minLength: 1
+    status:
+      in: query
+      name: status
+      required: false
+      description: The status of Entity Item
+      schema:
+        type: string
+        enum: [enabled, disabled]
+        minLength: 1
+        example: ''
+  schemas:
+    BotBody:
+      title: Request Body
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 250
+          example: Lead Generation Bot
+      additionalProperties: false
+    BotAttributeBody:
+      title: Request Body
+      type: object
+      required:
+        - name
+        - data_type
+      properties:
+        name:
+          type: string
+          maxLength: 250
+        desc:
+          type: string
+        value:
+          type: string
+        'value_...':
+          type: string
+      additionalProperties: false
+    BotAttributeBodyDateType:
+      allOf:
+        - $ref: '#/components/schemas/BotAttributeBody'
+        - type: object
+          properties:
+            data_type:
+              type: string
+              enum:
+                - date
+            value:
+              type: string
+              format: date
+            'value_...':
+              type: string
+              format: date
+    BotAttributeBodyOtherTypes:
+      allOf:
+        - $ref: '#/components/schemas/BotAttributeBody'
+        - type: object
+          properties:
+            data_type:
+              type: string
+              enum:
+                - string
+                - number
+    BotAttributeResponse:
+      title: Response Data
+      type: object
+      required:
+        - id
+        - name
+        - data_type
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 250
+        desc:
+          type: string
+        value:
+          type: string
+        'value_...':
+          type: string
+      additionalProperties: false
+    BotAttributeResponseDateType:
+      allOf:
+        - $ref: '#/components/schemas/BotAttributeResponse'
+        - type: object
+          properties:
+            data_type:
+              type: string
+              enum:
+                - date
+            value:
+              type: string
+              format: date
+    BotAttributeResponseOtherTypes:
+      allOf:
+        - $ref: '#/components/schemas/BotAttributeResponse'
+        - type: object
+          properties:
+            data_type:
+              type: string
+              enum:
+                - string
+                - number
+    UserInfo:
+      title: User Info Object
+      type: object
+      properties:
+        id:
+          type: string
+        board_id:
+          type: string
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        birthday:
+          type: string
+          format: date
+        channel:
+          type: string
+        locale:
+          type: string
+        timezone:
+          type: integer
+        picture:
+          type: string
+        ip:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        otn_topics:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              expired_at:
+                type: number
+              token:
+                type: string
+            additionalProperties: false
+        some_custom_attributes1:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: string
+              format: date
+      additionalProperties: false
+    UpdateUserBody:
+      title: Update User Object
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+        last_name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        gender:
+          anyOf:
+            - type: string
+              enum:
+                - male
+                - female
+            - type: string
+              maxLength: 0
+        birthday:
+          type: string
+          format: date
+        some_custom_attributes1:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: string
+              format: date
+      minProperties: 1
+      additionalProperties: false
+
+    EntityFieldBody:
+      type: array
+      items:
+        anyOf:
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: text
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: multiple_values
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: single_option
+            options:
+              type: object
+              properties:
+                predefined_data:
+                  type: array
+                  items:
+                    anyOf:
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: multiple_options
+            options:
+              type: object
+              properties:
+                predefined_data:
+                  type: array
+                  items:
+                    anyOf:
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: image
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: date
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            data_type:
+              type: string
+              example: entity
+            options:
+              type: object
+              properties:
+                entity_id:
+                  type: string
+      example:
+        - unique_name: quantity
+          name: Available products
+          data_type: text
+        - unique_name: session
+          name: Product types
+          data_type: multiple_values
+        - unique_name: collar_color
+          name: Product collar colors
+          data_type: single_option
+          options:
+            predefined_data:
+              - value: white
+                label: White
+              - value: black
+                label: Black
+
+    UpdateEntityFieldBody:
+      type: array
+      items:
+        anyOf:
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+        - type: object
+          properties:
+            unique_name:
+              type: string
+            name:
+              type: string
+            options:
+              type: object
+              properties:
+                predefined_data:
+                  type: array
+                  items:
+                    anyOf:
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                    - type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                      description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+      example:
+        - unique_name: color
+          name: Product colors
+          options:
+            predefined_data:
+              - value: red
+                label: Red
+              - value: yellow
+                label: Yellow
+              - value: black
+                label: Black
+        - unique_name: session
+          name: Kinds of product
+
+    EntityBody:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        name:
+          type: string
+        fields:
+          type: array
+          items:
+            anyOf:
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: text
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: multiple_values
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: single_option
+                options:
+                  type: object
+                  properties:
+                    predefined_data:
+                      type: array
+                      items:
+                        anyOf:
+                        - type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                            label_..:
+                              type: string
+                          description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                          example:
+                            value: us
+                            label: United States
+                        - type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                            label_..:
+                              type: string
+                          example:
+                            value: vi
+                            label: Vietnam
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: multiple_options
+                options:
+                  type: object
+                  properties:
+                    predefined_data:
+                      type: array
+                      items:
+                        anyOf:
+                        - type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                            label_..:
+                              type: string
+                          description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                          example:
+                            value: us
+                            label: United States
+                        - type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                            label_..:
+                              type: string
+                          description: If your bot is a multilingual one, you can create different label values associated to each language in your bot.
+                          example:
+                            value: vi
+                            label: Vietnam
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: image
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: date
+            - type: object
+              properties:
+                unique_name:
+                  type: string
+                name:
+                  type: string
+                data_type:
+                  type: string
+                  example: entity
+                options:
+                  type: object
+                  properties:
+                    entity_id:
+                      type: string
+      example:
+        name: Polo Shirt
+        fields:
+          - unique_name: description
+            name: Product description
+            data_type: text
+          - unique_name: photo
+            name: Product photo
+            data_type: image
+          - unique_name: color
+            name: Product colors
+            data_type: single_option
+            options:
+              predefined_data:
+                - value: red
+                  label: Red
+                - value: yellow
+                  label: Yellow
+          - unique_name: size
+            name: Product sizes
+            data_type: multiple_values
+          - unique_name: price
+            name: Product price
+            data_type: text
+          - unique_name: date
+            name: Date of manufacture
+            data_type: date
+      additionalProperties: false
+
+    EntityItemBody:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [enabled, disabled]
+        field_unique_name1:
+          type: string
+        field_unique_name2:
+          type: array
+          items:
+            type: string
+      example:
+        name: Summer Polo Shirt
+        status: enabled
+        description: This is one of our products in our new collection for Summer Time. Get it now?
+        photo: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnSFbSOfrpCk9x4vz_WXaabW8NOiZsoAPfYQ&usqp=CAU
+        color: [red, yellow]
+        size: [S, M, L, XL, XXL]
+        price: $10
+        date: 17-03-2020
+
+    UpdateEntityItemBody:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [enabled, disabled]
+        field_unique_name1:
+          type: string
+        field_unique_name2:
+          type: array
+          items:
+            type: string
+      example:
+        name: Summer Polo Shirt
+        status: disabled
+        color: [red]
+        size: [M, L]
+        price: $15
+
+    EntityResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        fields:
+          type: array
+          items:
+            properties:
+              unique_name:
+                type: string
+              name:
+                type: string
+              data_type:
+                type: string
+                enum: [text, multiple_values, entity, single_option, multiple_options, image, date]
+              options:
+                type: object
+                properties:
+                  predefined_data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        label_..:
+                          type: string
+                  entity_id:
+                    type: string
+      example:
+        id: '1'
+        name: Polo Shirt
+        fields:
+          - unique_name: description
+            name: Product description
+            data_type: text
+          - unique_name: photo
+            name: Product photo
+            data_type: image
+          - unique_name: color
+            name: Product colors
+            data_type: single_option
+            options:
+              predefined_data:
+                - value: red
+                  label: Red
+                  label_en: Red
+                - value: yellow
+                  label: Yellow
+                  label_en: Yellow
+          - unique_name: size
+            name: Product sizes
+            data_type: multiple_values
+          - unique_name: price
+            name: Product price
+            data_type: text
+          - unique_name: date
+            name: Date of manufacture
+            data_type: date
+      additionalProperties: false
+
+    EntityItemResponse:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [enabled, disabled]
+        entity_id:
+          type: string
+        field_unique_name1:
+          type: string
+        field_unique_name2:
+          type: array
+          items:
+            type: string
+      example:
+        id: '1'
+        name: Summer Polo Shirt
+        status: enabled
+        description: This is one of our products in our new collection for Summer Time. Get it now?
+        photo: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnSFbSOfrpCk9x4vz_WXaabW8NOiZsoAPfYQ&usqp=CAU
+        color: [red, yellow]
+        size: [S, M, L, XL, XXL]
+        price: $10
+        date: 17-03-2020
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          default: success
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: number
+        requestId:
+          type: string
+      additionalProperties: false
+
+paths:
+  ##### Bot endpoint #####
+  /bots/:
+    get:
+      tags:
+        - Bots
+      summary: Get your list bots
+      # description:
+      #   A detailed description of the operation.
+      #   Use markdown for rich text representation,
+      #   such as **bold**, *italic*, and [links](https://swagger.io).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: An array of bots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    team_name:
+                      type: string
+    post:
+      tags:
+        - Bots
+      summary: Create a new bot
+      # description:
+      #   A detailed description of the operation.
+      #   Use markdown for rich text representation,
+      #   such as **bold**, *italic*, and [links](https://swagger.io).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BotBody'
+      responses:
+        '200':
+          description: The new bot information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 'sf63ebfa6-bd2f-11ed-9e7f-b58f39e1d33c'
+                  name:
+                    type: string
+                    example: Lead Generation Bot
+  '/bots/{botId}':
+    get:
+      summary: Get your bot by bot ID
+      tags:
+        - Bots
+      parameters:
+        - $ref: '#/components/parameters/botId'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: A bot info
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  team_name:
+                    type: string
+                additionalProperties: false
+  '/bots/{botId}/attributes':
+    get:
+      tags:
+        - Bots
+      summary: Get all bot attributes
+      description:
+        Learn about [Bot Attributes](https://docs.botstar.com/docs/en/variables#bot-attributes).
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/envGet'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: Bot Attributes
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/BotAttributeResponseDateType'
+                    - $ref: '#/components/schemas/BotAttributeResponseOtherTypes'
+                additionalProperties: false
+          description: Default Response
+    post:
+      tags:
+        - Bots
+      summary: Create a new bot attribute
+      description: >
+        If your bot is a multilingual one, you can create different bot attribute values associated to each language in your bot. Learn about [Bot Attributes](https://docs.botstar.com/docs/en/variables#bot-attributes).<br><br>
+        Example <code>{ value: 'Hello', value_es: 'Hola' }</code>
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/BotAttributeBodyDateType'
+                - $ref: '#/components/schemas/BotAttributeBodyOtherTypes'
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BotAttributeResponseDateType'
+                  - $ref: '#/components/schemas/BotAttributeResponseOtherTypes'
+
+  ##### Bot attributes endpoint #####
+  '/bots/{botId}/attributes/{attributeId}':
+    patch:
+      tags:
+        - Bots
+      summary: Update a bot attribute
+      description: >
+        If your bot is a multilingual one, you can update different bot attribute values associated to each language in your bot. Learn about [Bot Attributes](https://docs.botstar.com/docs/en/variables#bot-attributes).<br><br>
+        Example <code>{ value: 'Hello', value_es: 'Hola' }</code>
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/attributeId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              title: Bot Attribute Update Body
+              type: object
+              properties:
+                desc:
+                  type: string
+                value:
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: string
+                      format: date
+                value_...:
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: string
+                      format: date
+              minProperties: 1
+              additionalProperties: false
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                  desc:
+                    type: string
+                  value:
+                    oneOf:
+                      - type: string
+                      - type: number
+                      - type: string
+                        format: date
+                  value_...:
+                    oneOf:
+                      - type: string
+                      - type: number
+                      - type: string
+                        format: date
+                additionalProperties: false
+          description: Default Response
+    delete:
+      tags:
+        - Bots
+      summary: Delete a bot attribute
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/attributeId'
+        - $ref: '#/components/parameters/env'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Empty response data
+
+  ##### Bot publishing endpoints #####
+  '/bots/{botId}/publish':
+    post:
+      tags:
+        - Bots
+      summary: Publish a bot to live
+      description: >
+        Publish your changes to the production
+      parameters:
+        - $ref: '#/components/parameters/botId'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: The published bot information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: 'success'
+
+  ##### Users attributes endpoint #####
+  '/bots/{botId}/users/{userId}':
+    get:
+      tags:
+        - Users
+      summary: Get user info
+      description:
+        Learn about [Users](https://docs.botstar.com/docs/en/overview-audience) and [User Attributes](https://docs.botstar.com/docs/en/user-attributes#what-are-user-attributes).
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/userId'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+          description: Successful Response
+    patch:
+      tags:
+        - Users
+      summary: Update user attributes
+      description:
+        Learn about [User Attributes](https://docs.botstar.com/docs/en/overview-audience) and [How to update it in webapp](https://docs.botstar.com/docs/en/user-attributes#update-chatbot-user-attributes-for-users).
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        # description: sfssd
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserBody'
+          description: Successful Response
+
+  ##### Create users attributes endpoint #####
+  '/bots/{botId}/users/attributes':
+    post:
+      tags:
+        - Users
+      summary: Create custom user attributes
+      description:
+        Learn about [User Attributes](https://docs.botstar.com/docs/en/user-attributes#what-are-user-attributes) and How to create [Custom User Attributes](https://docs.botstar.com/docs/en/user-attributes#create-custom-user-attributes).
+      parameters:
+        - $ref: '#/components/parameters/botId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                title: User Attribute Create Body
+                type: object
+                required:
+                  - field_name
+                  - field_type
+                properties:
+                  field_name:
+                    type: string
+                    minLength: 1
+                  field_type:
+                    type: string
+                    enum:
+                      - string
+                      - number
+                      - date
+                      - boolean
+                additionalProperties: false
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - field_name
+                  - field_type
+                properties:
+                  id:
+                    type: string
+                  field_name:
+                    type: string
+                    minLength: 1
+                  field_type:
+                    type: string
+                    enum:
+                      - string
+                      - number
+                      - date
+                      - boolean
+
+  ##### get all entities endpoint #####
+  '/bots/{botId}/cms_entities':
+    get:
+      summary: Get all entities
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entities
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/envGet'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all entities response data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntityResponse'
+
+    post:
+      summary: Create an entity
+      description: >
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entities
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Create an entity response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+
+  ##### get an entity endpoint #####
+  '/bots/{botId}/cms_entities/{entityId}':
+    get:
+      summary: Get an entity
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entities
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/envGet'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get an entity response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityResponse'
+
+    patch:
+      summary: Update an entity
+      description: >
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms)
+      tags:
+        - CMS Entities
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              example:
+                name: Summer Polo Shirt
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update an entity response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    delete:
+      summary: Delete an entity
+      tags:
+        - CMS Entities
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Delete an entity response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  #### create entity fields endpoint #####
+  '/bots/{botId}/cms_entities/{entityId}/fields':
+    post:
+      summary: Create entity field(s)
+      description: >
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Fields
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityFieldBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Create entity fields(s) response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    patch:
+      summary: Update entity field(s)
+      description: >
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Fields
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntityFieldBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update entity fields(s) response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    delete:
+      summary: Delete entity field(s)
+      tags:
+        - CMS Entity Fields
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+        - $ref: '#/components/parameters/unique_names'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Delete entity fields(s) response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  ##### get all entity items endpoint #####
+  '/bots/{botId}/cms_entities/{entityId}/items':
+    get:
+      summary: Get all entity items
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Items
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/envGet'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/name'
+        - $ref: '#/components/parameters/status'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all entity items response data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntityItemResponse'
+
+    post:
+      summary: Create an entity item
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Items
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityItemBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Create an entity item response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityItemResponse'
+
+  ##### entity item endpoint #####
+  '/bots/{botId}/cms_entities/{entityId}/items/{entityItemId}':
+    get:
+      summary: Get an entity item
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Items
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/entityItemId'
+        - $ref: '#/components/parameters/envGet'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get an entity item response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityItemResponse'
+
+    patch:
+      summary: Update an entity item
+      description:
+        Learn about [CMS](https://docs.botstar.com/docs/en/set-up-cms).
+      tags:
+        - CMS Entity Items
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/entityItemId'
+        - $ref: '#/components/parameters/env'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntityItemBody'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update an entity item response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    delete:
+      summary: Delete an entity item
+      tags:
+        - CMS Entity Items
+      parameters:
+        - $ref: '#/components/parameters/botId'
+        - $ref: '#/components/parameters/entityId'
+        - $ref: '#/components/parameters/entityItemId'
+        - $ref: '#/components/parameters/env'
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Delete an empty item response data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  ##### Message endpoint #####
+  '/messages':
+      post:
+        tags:
+          - Messages
+        summary: Send a message to a Facebook audience
+        # description:
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                title: Send Message body
+                type: object
+                required:
+                  - message
+                  - recipient
+                properties:
+                  recipient:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
+                    additionalProperties: false
+                  message:
+                    description: >
+                      Message in json format for sent to use. Please follow <a href="https://docs.botstar.com/docs/en/message-api">BotStar JSON Format</a>.
+                    type: object
+                    example:
+                      text: Hello World
+                  options:
+                    type: object
+                    properties:
+                      message_tag:
+                        type: string
+                        enum:
+                          - CONFIRMED_EVENT_UPDATE
+                          - POST_PURCHASE_UPDATE
+                          - ACCOUNT_UPDATE
+                    additionalProperties: false
+                additionalProperties: false
+        security:
+          - BearerAuth: []
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    recipient_id:
+                      type: string
+                    message_id:
+                      type: string
+                  additionalProperties: false
+                  description: Default Response

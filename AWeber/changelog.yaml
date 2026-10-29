@@ -1,0 +1,75 @@
+tags:
+  Changelog: |
+    We have an email newsletter just for developers. It contains information about new features and upcoming changes to the API.
+    It’s a great way to stay informed. Check out previous newsletters <a href="https://archive.aweber.com/awlabs" target="_blank">here</a>.
+    When you sign up for a developer account you are automatically subscribed. If you previously
+    unsubscribed or would like to have another email address receive updates, feel free to sign up here:
+    <a href="https://forms.aweber.com/form/70/958429970.htm" target="_blank">AWeber Developer Newsletter</a>
+    <br><br>
+
+    ## Webhooks
+
+    ### **Version 1.3.0**
+    ------------
+    #### Release Date: Jun 21, 2022
+    - Webhook support no longer requires a request to the API team.  They can be enabled for any OAuth 2 application on labs.aweber.com.
+
+    ## API
+
+    ### **Version 1.4.1**
+    #### Release Date: October 13, 2026
+    - Changes the `ip_address` field format to accept any public IPv4 or IPv6 address.
+    - Documents how `update_existing` handles `tags`, `custom_fields`, subscription status, and the `201` response.
+    - Documents that adding an address already on the list returns `400` with error type `WebServiceError`, including for unsubscribed subscribers.
+    - Documents the day precision, UTC, and date formats of `unsubscribed_after` and `unsubscribed_before`.
+    - Documents that a token refresh invalidates the previous access token and that refresh tokens must be stored securely.
+    - Documents that the rate limit response is HTTP `403` with message `Rate Limit Error`, not `429`.
+    - Documents that webhook subscriber fields are a snapshot at processing time and that callbacks should respond quickly.
+    - Adds JSON request body examples for the write operations that accept `application/json`.
+    - Corrects the webhook `unsubscribed_at` example date and the `application/x-www-form-urlencoded` content type name in Troubleshooting.
+
+    ### **Version 1.4.0**
+    #### Release Date: September 5, 2025
+    - Introduces **beta endpoints** accessible at `api.aweber.com/2.0-beta/`. These endpoints are early-access versions of the upcoming v2 API and primarily focus on using UUIDs instead of numeric IDs. The beta endpoints allow developers to preview and test new features and changes before the official v2 release.
+
+    ### **Version 1.3.1**
+    #### Release Date: August 22, 2025
+    - Adds support for retrieving detailed click data by passing the `detailed=true` query parameter to the broadcast clicks endpoint.
+
+    ### **Version 1.3.0**
+    #### Release Date: May 6, 2025
+    - Removes legacy campaign link and click endpoints.
+
+    ### **Version 1.2.3**
+    ------------
+    #### Release Date: Dec 27, 2023
+    - Adds [410 error response][64] to list of possible API Responses
+    - Replaces documentation links in code examples from `labs.aweber.com/docs/troubleshooting`
+      to use `api.aweber.com`
+
+    ### **Version 1.2.2**
+    ------------
+    #### Release Date: Oct 12, 2023
+    - Adds additional 403 error response to the [Add Subscriber][7] endpoint
+
+    ### **Version 1.2.1**
+    ------------
+    #### Release Date: Dec 14, 2022
+    - Add `company` field to the [Account][51] endpoints.
+
+    ### **Version 1.2.0**
+    ------------
+    #### Release Date: Dec 15, 2021
+    - Add [Purchase][63] creation endpoint. This allows for the creation of a tracked event (purchase) and a
+      subscriber to be made.
+
+    ### **Version 1.1.1**
+    ------------
+    #### Release Date: Nov 17, 2021
+    - Add `uuid` field to the [Subscriber][5] entry endpoint response.
+
+    [5]: #tag/Subscribers%2Fpaths%2F~1accounts~1%7BaccountId%7D~1lists~1%7BlistId%7D~1subscribers~1%7BsubscriberId%7D%2Fget "getSubscriber"
+    [7]: #tag/Subscribers%2Fpaths%2F~1accounts~1%7BaccountId%7D~1lists~1%7BlistId%7D~1subscribers%2Fpost "postSubscriber"
+    [51]: #tag/Accounts "accounts"
+    [63]: #tag/Subscribers/paths/~1accounts~1{accountId}~1lists~1{listId}~1purchases/post
+    [64]: #blocked "BlockedError"

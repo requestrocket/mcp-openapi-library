@@ -1,0 +1,215 @@
+openapi: 3.0.2
+info:
+  title: Analytics
+  description: REST API for accessing analytics data from the AWeber service.
+  version: '1.0'
+  contact:
+    name: API Team
+    url: 'https://labs.aweber.com'
+    email: api@aweber.com
+tags:
+  - name: Beta Endpoints
+paths:
+  '/analytics/reports/broadcasts-links':
+    get:
+      summary: Broadcast Links Analytics
+      description: >-
+        Returns links data for clicks or pageviews in a broadcast. The data can be
+        filtered by minimum and maximum unique counts.
+
+        This endpoint is part of the beta 2.0 API and uses UUID identifiers.
+
+        **This is a beta endpoint and is subject to change without notice.**
+        Use only for testing and development purposes.
+      operationId: getBroadcastLinksAnalytics
+      servers:
+        - url: /2.0-beta
+          description: Beta v2 API endpoints
+      tags:
+        - Beta Endpoints
+      parameters:
+        - name: account_id
+          in: query
+          schema:
+            description: Account ID
+            type: string
+            pattern: '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
+            example: 18b02362-8eaf-477c-9917-d447bbe618d5
+          required: true
+          description: Account UUID. Can be found using the [Get accounts](#tag/Accounts/paths/~1accounts/get) endpoint.
+        - name: broadcast_id
+          in: query
+          schema:
+            description: Message/Broadcast ID
+            type: string
+            pattern: '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
+            example: 78746ae5-b9bb-4faa-ac91-e8971fa878ae
+          required: true
+          description: Broadcast UUID. Can be found using the [Get broadcasts](#tag/Broadcasts/paths/~1accounts~1{accountId}~1lists~1{listId}~1broadcasts/get) endpoint.
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [clicks, pageviews]
+            example: clicks
+          required: true
+          description: Type of link data to retrieve
+        - name: min_count
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 1
+          description: Minimum count threshold for unique links
+        - name: max_count
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+          description: Maximum count threshold for unique links
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [unique, total]
+            default: unique
+          description: Field to sort the results by
+        - name: sort_asc
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Whether to sort in ascending order (true) or descending order (false)
+        - name: before
+          in: query
+          description: specifies the IDs for pagination, for results from before onward
+          schema:
+            type: integer
+        - name: after
+          in: query
+          description: specifies the IDs for pagination, for results from after onward
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          description: specifies the max number of items in a single page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Successfully retrieved link analytics data
+          headers:
+            Link:
+              description: "[RFC-8288](https://tools.ietf.org/html/rfc8288) Link header"
+              schema:
+                type: string
+                example: "<https://api.aweber.com/v1/accounts/1234567890/broadcasts/1234567890/links?before=1717000000&after=1717000000&page_size=100>; rel=next"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - url
+                    - unique
+                    - total
+                    - type
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: The URL of the link
+                      example: "http://aweber.com"
+                    unique:
+                      type: integer
+                      description: Number of unique interactions with the link
+                      example: 2
+                    total:
+                      type: integer
+                      description: Total number of interactions with the link
+                      example: 2
+                    type:
+                      type: string
+                      enum: [click, pageview]
+                      description: Type of interaction (click or pageview)
+                      example: "click"
+              example:
+                - url: "http://aweber.com"
+                  unique: 2
+                  total: 2
+                  type: "click"
+                - url: "https://api.aweber.com"
+                  unique: 1
+                  total: 2
+                  type: "click"
+                - url: "https://google.com"
+                  unique: 1
+                  total: 1
+                  type: "click"
+        '400':
+          description: The request contained an error
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    description: A URI reference that identifies the problem type
+                    type: string
+                    example: "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                  title:
+                    description: A short, human-readable summary of the problem type
+                    type: string
+                    example: "Request Error"
+                  status:
+                    description: The HTTP status code generated by the origin server for this occurrence of the problem
+                    type: integer
+                    example: 400
+                  instance:
+                    description: A URI reference that identifies the specific occurrence of the problem
+                    type: string
+                  detail:
+                    description: A human-readable explanation specific to this occurrence of the problem
+                    type: string
+                    example: "'account' is not of type 'integer'"
+              example:
+                title: Request Error
+                status: 400
+                detail: "'account' is not of type 'integer'"
+        '404':
+          description: Database Not Found
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    description: A URI reference that identifies the problem type
+                    type: string
+                    example: "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                  title:
+                    description: A short, human-readable summary of the problem type
+                    type: string
+                    example: "Not Found"
+                  status:
+                    description: The HTTP status code generated by the origin server for this occurrence of the problem
+                    type: integer
+                    example: 404
+                  instance:
+                    description: A URI reference that identifies the specific occurrence of the problem
+                    type: string
+                  detail:
+                    description: A human-readable explanation specific to this occurrence of the problem
+                    type: string
+                    example: "The requested account could not be found"
+              example:
+                title: Not Found
+                status: 404
+                detail: The requested account could not be found
+        '503':
+          description: Service cannot process requests at this time
+      security:
+        - "OAuth 2.0": ["email.read"]

@@ -1,0 +1,2477 @@
+openapi: 3.0.3
+info:
+  title: Catalog management API
+  version: 3.0.0
+servers:
+  - url: https://discovery.bloomreach.com/dataconnect/api/v3
+paths:
+  # Configs
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/configs/LATEST"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+    get:
+      tags: [Catalog configuration]
+      summary: Get current configuration
+      description: |
+        Understand the current state of catalog configuration, including custom attributes configuration and all [catalog settings](https://documentation.bloomreach.com/discovery/docs/catalog-settings) present in the dashboard.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "etag":
+                        type: string
+                  "data":
+                    type: object
+                    properties:
+                      "config":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductConfiguration"
+                          - $ref: "#/components/schemas/ContentConfiguration"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+    post:
+      tags: [Catalog configuration]
+      summary: Modify current configuration
+      description: |
+        Programmatically modify the current catalog configuration to automate common tasks.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "meta":
+                  type: object
+                  properties:
+                    "if_match_etag":
+                      type: string
+                      description: "The ETag of the catalog's current configuration."
+                  required:
+                    - "if_match_etag"
+                "data":
+                  type: object
+                  properties:
+                    "config":
+                      oneOf:
+                        - $ref: "#/components/schemas/ProductConfiguration"
+                        - $ref: "#/components/schemas/ContentConfiguration"
+      responses:
+        200:
+          description: OK - The new config matches the current one, and no change is made. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "previous_etag":
+                        type: string
+                      "new_etag":
+                        type: string
+                  "data":
+                    type: object
+                    properties:
+                      "config":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductConfiguration"
+                          - $ref: "#/components/schemas/ContentConfiguration"
+        201:
+          description: Created - The new config differs from the current one, and the changes are applied. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "previous_etag":
+                        type: string
+                      "new_etag":
+                        type: string
+                  "data":
+                    type: object
+                    properties:
+                      "config":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductConfiguration"
+                          - $ref: "#/components/schemas/ContentConfiguration"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "etag":
+                        type: string
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        412:
+          description: if_match_etag field did not match expected value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/412Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/configs/{config_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/ConfigId"
+    get:
+      tags: [Catalog configuration]
+      summary: Get an older configuration
+      description: |
+        Understand what the catalog configuration looked like at the point in time an index was generated. 
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "etag":
+                        type: string
+                  "data":
+                    type: object
+                    properties:
+                      "config":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductConfiguration"
+                          - $ref: "#/components/schemas/ContentConfiguration"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/reserved-attributes"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+    get:
+      tags: [Catalog configuration]
+      summary: Get reserved attributes
+      description: |
+        Get a list of all [reserved attributes](https://documentation.bloomreach.com/discovery/reference/reserved-fields-api) for the catalog.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "reserved_attributes":
+                        oneOf:
+                          - $ref: "#/components/schemas/SnapReservedAttributes"
+                          - $ref: "#/components/schemas/ContentReservedAttributes"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  # Jobs
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/jobs/{job_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/JobId"
+    get:
+      tags: [Job processing]
+      summary: Get job details
+      description: |
+        Get all the details about a particular job including its status.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "job":
+                        $ref: "#/components/schemas/Job"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/jobs"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageLimit"
+      - $ref: "#/components/parameters/JobClass"
+    get:
+      tags: [Job processing]
+      summary: Get all jobs
+      description: |
+        Get all the jobs associated with a catalog.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "meta":
+                    type: object
+                    properties:
+                      "previous_page":
+                        type: integer
+                      "next_page":
+                        type: integer
+                  "data":
+                    type: object
+                    properties:
+                      "jobs":
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Job"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  # Catalogs
+  "/accounts/{account_name}/catalogs":
+    parameters:
+      - $ref: "#/components/parameters/AccountName"
+    get:
+      tags: [View Catalogs data]
+      summary: Get all catalogs
+      description: |
+        Get all the catalogs present for an account.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "catalogs":
+                        type: array
+                        items:
+                          oneOf:
+                            - $ref: "#/components/schemas/ProductCatalog"
+                            - $ref: "#/components/schemas/ContentCatalog"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+    get:
+      tags: [View Catalogs data]
+      summary: Get catalog details
+      description: |
+        View the current state of a catalog. This returns the entire catalog with product and item feed record data.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "catalog":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductCatalog"
+                          - $ref: "#/components/schemas/ContentCatalog"
+        401:
+          description: Unauthorized
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        404:
+          description: Not found
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  # Indexing
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/indexes"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/IndexRefreshHeader"
+      - $ref: "#/components/parameters/IgnoreCountDropHeader"
+    post:
+      tags: [Feed indexing]
+      summary: Run an indexing job
+      description: |
+        Trigger an indexing job to [update the catalog's index](https://documentation.bloomreach.com/discovery/docs/promoting-changes-viewing-jobs#3-update-catalogs-index).
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "job_id":
+                        type: string
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+  # Records
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageLimit"
+    get:
+      tags: [Manage feed records]
+      summary: Get current records
+      description: |
+        View the current state of product and item feed records in a catalog.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "records":
+                        type: array
+                        items:
+                          oneOf:
+                            - $ref: "#/components/schemas/Product"
+                            - $ref: "#/components/schemas/ProductSummary"
+                            - $ref: "#/components/schemas/Item"
+                            - $ref: "#/components/schemas/ItemSummary"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+    put:
+      tags: [Manage feed records]
+      summary: Upload full feed
+      description: |
+        Upload the entire feed data at once.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: "List of file names to be processed"
+              type: array
+              items:
+                type: string
+          application/json-patch+json:
+            schema:
+              description: "List of JSON Lines patch operations"
+              type: array
+              items:
+                type: object
+          application/json-patch+jsonlines:
+            schema:
+              description: "JSON Lines patch operations"
+              type: object
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "job_id":
+                        type: string
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        406:
+          description: Invalid Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/406Response"
+        413:
+          description: Content Too Large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/413Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+    patch:
+      tags: [Manage feed records]
+      summary: Modify feed records
+      description: |
+        Edit/change or add particular product or item records in the feed. 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: "List of file names to be processed"
+              type: array
+              items:
+                type: string
+          application/json-patch+json:
+            schema:
+              description: "List of JSON Lines patch operations"
+              type: array
+              items:
+                type: object
+          application/json-patch+jsonlines:
+            schema:
+              description: "JSON Lines patch operations"
+              type: object
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "job_id":
+                        type: string
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        406:
+          description: Invalid Content-Type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/406Response"
+        413:
+          description: Content Too Large
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/413Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get record details
+      description: |
+        View the details of a product or item feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "record":
+                        oneOf:
+                          - $ref: "#/components/schemas/Product"
+                          - $ref: "#/components/schemas/ProductSummary"
+                          - $ref: "#/components/schemas/Item"
+                          - $ref: "#/components/schemas/ItemSummary"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/variants"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageLimit"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get record variants
+      description: |
+        View the [variants](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#variant) associated with a product or item feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      "data":
+                        type: object
+                        properties:
+                          "variants":
+                            type: object
+                            additionalProperties:
+                              $ref: "#/components/schemas/ProductVariant"
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                          "previous_page":
+                            type: string
+                          "next_page":
+                            type: string
+                      "data":
+                        type: object
+                        properties:
+                          "variants":
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/ProductVariantSummary"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/variants/{variant_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/VariantId"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get variant details
+      description: |
+        View the details of a [variant](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#variant) of any product or item in the feed data.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "variant":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductVariant"
+                          - $ref: "#/components/schemas/ProductVariantSummary"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/views"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageLimit"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get views
+      description: |
+        Get all the [views](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#views) associated with a product or item feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                      "data":
+                        type: object
+                        properties:
+                          "views":
+                            type: object
+                            additionalProperties:
+                              oneOf:
+                                - $ref: "#/components/schemas/ProductView"
+                                - $ref: "#/components/schemas/ItemView"
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                      "data":
+                        type: object
+                        properties:
+                          "views":
+                            type: array
+                            items:
+                              oneOf:
+                                - $ref: "#/components/schemas/ProductViewsetPreview"
+                                - $ref: "#/components/schemas/ItemViewsetPreview"
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                          "previous_page":
+                            type: string
+                          "next_page":
+                            type: string
+                        required:
+                          - "count"
+                      "data":
+                        type: object
+                        properties:
+                          "views":
+                            type: array
+                            items:
+                              oneOf:
+                                - $ref: "#/components/schemas/ProductViewSummary"
+                                - $ref: "#/components/schemas/ItemViewSummary"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/views/{view_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/ViewId"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get view details
+      description: |
+        Get the details of a [view](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#views) of any product or item feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      "data":
+                        type: object
+                        properties:
+                          "view":
+                            oneOf:
+                              - $ref: "#/components/schemas/ProductView"
+                              - $ref: "#/components/schemas/ItemView"
+                  - type: object
+                    properties:
+                      "data":
+                        type: object
+                        properties:
+                          "view":
+                            oneOf:
+                              - $ref: "#/components/schemas/ProductViewPreview"
+                              - $ref: "#/components/schemas/ItemViewPreview"
+                  - type: object
+                    properties:
+                      "data":
+                        type: object
+                        properties:
+                          "view":
+                            oneOf:
+                              - $ref: "#/components/schemas/ProductViewSummary"
+                              - $ref: "#/components/schemas/ItemViewSummary"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/views/{view_id}/variants"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/ViewId"
+      - $ref: "#/components/parameters/PageNumber"
+      - $ref: "#/components/parameters/PageLimit"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get view variants
+      description: |
+        Get all the [variants](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#variant) associated with a different [view](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#views) of any product feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                      "data":
+                        type: object
+                        properties:
+                          "variant_views":
+                            type: object
+                            additionalProperties:
+                              $ref: "#/components/schemas/ProductVariantView"
+                  - type: object
+                    properties:
+                      "meta":
+                        type: object
+                        properties:
+                          "count":
+                            type: integer
+                          "previous_page":
+                            type: string
+                          "next_page":
+                            type: string
+                        required:
+                          - "count"
+                      "data":
+                        type: object
+                        properties:
+                          "views":
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/ProductVariantViewSummary"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+  ? "/accounts/{account_name}/catalogs/{catalog_name}/environments/{environment_name}/records/{record_id}/views/{view_id}/variants/{variant_id}"
+  : parameters:
+      - $ref: "#/components/parameters/AccountName"
+      - $ref: "#/components/parameters/CatalogName"
+      - $ref: "#/components/parameters/EnvironmentName"
+      - $ref: "#/components/parameters/RecordId"
+      - $ref: "#/components/parameters/ViewId"
+      - $ref: "#/components/parameters/VariantId"
+      - $ref: "#/components/parameters/Mode"
+    get:
+      tags: [Manage feed records]
+      summary: Get view variant details
+      description: |
+        Get the details of a [variant](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#variant) for a different [view](https://documentation.bloomreach.com/discovery/docs/discovery-glossary#views) of a product feed record.
+      responses:
+        200:
+          description: OK. Click to see the response structure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "data":
+                    type: object
+                    properties:
+                      "variant_view":
+                        oneOf:
+                          - $ref: "#/components/schemas/ProductVariantView"
+                          - $ref: "#/components/schemas/ProductVariantViewSummary"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "details":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/404Response"
+        429:
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/429Response"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/500Response"
+
+components:
+  parameters:
+    AccountName:
+      description: "Your unique account name."
+      name: account_name
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "homeoasis"
+
+    CatalogName:
+      description: "\"Catalog name\" is also called domain key. Use the same value as your domain key in your search API requests."
+      name: catalog_name
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "homeoasis_fr"
+
+    EnvironmentName:
+      description: "The type of environment you want to use for the request (Production/Staging)."
+      name: environment_name
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+        enum: [production, staging]
+      required: true
+
+    ConfigId:
+      description: "The unique ID associated with a particular state of the catalog configuration."
+      name: config_id
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "1324"
+
+    JobId:
+      description: "The job ID returned in the response from sending your catalog data (refer to [Upload full feed](https://documentation.bloomreach.com/discovery/reference/put_accounts-account-name-catalogs-catalog-name-environments-environment-name-records))."
+      name: job_id
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "1324"
+
+    PageNumber:
+      description: "To navigate through paginated results, use the page number to switch between pages."
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      required: false
+      example: 1
+
+    PageLimit:
+      description: "Specify the maximum number of pages to return in the response."
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 20
+      required: false
+      example: 10
+
+    JobClass:
+      description: |
+        Filter the jobs based on comma-separated class values:
+
+        * feed_records_full — Include full feed jobs in response, that is, if type=feed and feed_mode=full
+        * feed_records_delta - Include delta feed jobs in response, that is, if type=feed and feed_mode=delta
+        * index_update - Include update index jobs from search quality in response, that is, if type=index, index_mode=update
+        * index_refresh - Include refresh index jobs in response, that is, if type=index, index_mode=refresh
+        * suggest_refresh - Include suggestions for refresh jobs in response
+
+        If no filter value is provided, all jobs are returned by default, regardless of job class. This is equivalent to passing all job class values in the parameter.
+      name: class
+      in: query
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - feed_records_full
+            - feed_records_delta
+            - index_update
+            - index_refresh
+            - suggest_refresh
+        minItems: 1
+      example:
+        - "feed_products_full,feed_products_delta"
+        - "index_update"
+
+    Mode:
+      description: |
+        * raw - returns only the raw view/variant data of a feed record
+        * preview - returns a preview of the complete feed record containing all attributes, views, and variants
+      name: mode
+      in: query
+      schema:
+        type: string
+        enum:
+          - "raw"
+          - "preview"
+      required: false
+
+    RecordId:
+      description: "The unique ID associated with a product or item feed record."
+      name: record_id
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "1111abcd"
+
+    ViewId:
+      description: |
+        A unique identifier for a specific view of your product catalog.
+        If you have multiple versions of your site, each with its product catalog characteristics like product titles and prices, then add view_id to your call.
+        
+        {user.br} uses your view_id parameter value to display the right product information for your customers based on their individual site views. 
+        You can enter any string value to identify the specific site catalog view. This string must be consistent in your pixel, API, and product catalog.
+      name: view_id
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "1324abc"
+
+    VariantId:
+      description: "A unique identifier for a specific variant of a product or item feed record."
+      name: variant_id
+      in: path
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      required: true
+      example: "123xyz"
+
+    IndexRefreshHeader:
+      description: "Optionally triggers a full index refresh, in which all products in the catalog are reindexed with the latest configuration.\n\nThis only affects products that were already existing and indexed in the feed. Any newly ingested products will not be affected."
+      name: Index-Refresh
+      in: header
+      schema:
+        type: boolean
+      required: false
+     
+    IgnoreCountDropHeader:
+      description: "Optionally ignore any count drops that occur during the job, allowing the index to be updated even if the number of products drops below the allowed threshold."
+      name: BR-Ignore-Document-Count-Drop
+      in: header
+      schema:
+        type: boolean
+      required: false
+     
+  schemas:
+    SnapReservedAttributes:
+      type: object
+      properties:
+        "product":
+          additionalProperties:
+            type: object
+          example:
+            "availability": {}
+            "brand": {}
+            "br_high_confidence_field": {}
+            "capacity": {}
+            "catalog_code": {}
+            "category_paths": {}
+            "city_location": {}
+            "color": {}
+            "color_group": {}
+            "condition": {}
+            "depth": {}
+            "description": {}
+            "flags": {}
+            "gender": {}
+            "height": {}
+            "i_level": {}
+            "is_buyable": {}
+            "is_monogramed": {}
+            "is_perishable": {}
+            "is_sellable": {}
+            "item_condition": {}
+            "item_no": {}
+            "keywords": {}
+            "large_image": {}
+            "launch_date": {}
+            "low_price": {}
+            "low_sale_price": {}
+            "model_name": {}
+            "model_no": {}
+            "price": {}
+            "price_range": {}
+            "reviews": {}
+            "sale_keywords": {}
+            "sale_price": {}
+            "sale_price_range": {}
+            "size": {}
+            "sku_id": {}
+            "store_id": {}
+            "store_location": {}
+            "suite_info": {}
+            "swatch_image": {}
+            "thumb_image": {}
+            "title": {}
+            "url": {}
+            "width": {}
+        "variant":
+          additionalProperties:
+            type: object
+          example:
+            "color": {}
+            "color_group": {}
+            "large_image": {}
+            "price": {}
+            "sale_price": {}
+            "size": {}
+            "sku_id": {}
+            "swatch_image": {}
+            "thumb_image": {}
+
+    ContentReservedAttributes:
+      type: object
+      properties:
+        "item":
+          additionalProperties:
+            type: object
+          example:
+            "uid": {}
+            "item_id": {}
+            "catalog_views": {}
+
+    ContentConfiguration:
+      type: object
+      properties:
+        feed:
+          type: object
+          properties:
+            enable_feed_jobs:
+              type: boolean
+        index:
+          type: object
+          properties:
+            enable_index_jobs:
+              type: boolean
+            search_docs_drop_threshold:
+              type: number
+        custom_attributes_defaults:
+          type: object
+          properties:
+            facetable:
+              type: string
+              enum:
+                - auto
+                - manual
+                - off
+            searchable:
+              type: boolean
+        custom_attributes:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              level:
+                type: string
+                enum:
+                  - product
+                  - variant
+              displayable:
+                type: boolean
+              facetable:
+                type: string
+                enum:
+                  - auto
+                  - manual
+                  - off
+              searchable:
+                type: boolean
+              multi_valued:
+                type: boolean
+              data_type:
+                type: string
+                enum:
+                  - text
+                  - number
+
+    ProductConfiguration:
+      type: object
+      properties:
+        feed:
+          type: object
+          properties:
+            enable_feed_jobs:
+              type: boolean
+        index:
+          type: object
+          properties:
+            enable_index_jobs:
+              type: boolean
+            enable_auto_indexing:
+              type: boolean
+            search_unavailable_docs:
+              type: boolean
+            search_docs_drop_threshold:
+              type: number
+        variants:
+          type: object
+          properties:
+            sku_select:
+              type: string
+              example: "on | off | transition-on | transition-off"
+            enable_hero_sku_ranking:
+              type: boolean
+              example: true
+            enable_filtering:
+              type: boolean
+              example: false
+            ranking_attributes:
+              type: array
+              items:
+                type: string
+              example: ["color", "color_group", "custom_attribute"]
+            use_unavailable_variant_as_hero:
+              type: boolean
+              example: false
+            grouping_attribute:
+              type: string
+              example: "some_attribute"
+            search_document_variants_limit:
+              type: number
+              example: 5
+        custom_attributes_defaults:
+          type: object
+          properties:
+            facetable:
+              type: string
+              enum:
+                - auto
+                - manual
+                - off
+            searchable:
+              type: boolean
+        custom_attributes:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              level:
+                type: string
+                enum:
+                  - product
+                  - variant
+              displayable:
+                type: boolean
+              facetable:
+                type: string
+                enum:
+                  - auto
+                  - manual
+                  - off
+              searchable:
+                type: boolean
+              multi_valued:
+                type: boolean
+              data_type:
+                type: string
+                enum:
+                  - text
+                  - number
+        autosuggest:
+          type: object
+          properties:
+            product_attributes:
+              type: object
+              properties:
+                categories:
+                  type: string
+                  example: "leaf_only | off"
+                other_attributes:
+                  type: array
+                  items:
+                    type: string
+                  example: ["color", "title", "custom_attribute"]
+            minimum_character_count:
+              type: number
+              example: 4
+            word_count_limit:
+              type: number
+              example: 5
+            product_autosuggest:
+              type: boolean
+            attibute_autosuggest:
+              type: boolean
+            attribute_type:
+              type: string
+              example: category
+            attribute_autosuggest_limit:
+              type: number
+              example: 3
+        core_attribute_searchability:
+          type: object
+          properties:
+            category_names:
+              type: boolean
+            category_ids:
+              type: boolean
+            product_ids:
+              type: boolean
+            variant_ids:
+              type: boolean
+        reserved_attribute_searchability:
+          type: object
+          properties:
+            title:
+              type: boolean
+            brand:
+              type: boolean
+            description:
+              type: boolean
+            gender:
+              type: boolean
+            item_no:
+              type: boolean
+            model_no:
+              type: boolean
+            suite_info:
+              type: boolean
+            store_id:
+              type: boolean
+            catalog_code:
+              type: boolean
+            keywords:
+              type: boolean
+            size:
+              type: boolean
+            height:
+              type: boolean
+            width:
+              type: boolean
+            weight:
+              type: boolean
+            capacity:
+              type: boolean
+            reviews:
+              type: boolean
+            price:
+              type: boolean
+            sale_price:
+              type: boolean
+            color:
+              type: boolean
+            color_group:
+              type: boolean
+
+    Job:
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/JobErrorDetail"
+        "id":
+          type: string
+        "stats":
+          type: object
+          oneOf:
+            - $ref: "#/components/schemas/ProductFeedJobStats"
+            - $ref: "#/components/schemas/ProductIndexJobStats"
+            - $ref: "#/components/schemas/ContentFeedJobStats"
+            - $ref: "#/components/schemas/ContentIndexJobStats"
+        "properties":
+          type: object
+          oneOf:
+            - $ref: "#/components/schemas/FeedJobProperties"
+            - $ref: "#/components/schemas/IndexJobProperties"
+            - $ref: "#/components/schemas/SuggestJobProperties"
+        "type":
+          enum:
+            - "feed"
+            - "index"
+            - "suggest"
+          type: string
+        "status":
+          enum:
+            - "running"
+            - "skipped"
+            - "queued"
+            - "failed"
+            - "success"
+            - "killed"
+          type: string
+        "status_code":
+          enum:
+            - 100
+            - 101
+            - 102
+            - 105
+            - 200
+            - 210
+            - 305
+            - 310
+            - 350
+            - 360
+            - 430
+            - 440
+            - 450
+            - 500
+            - 550
+          type: number
+        created_at:
+          format: date-time
+          type: string
+        started_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        stopped_at:
+          format: date-time
+          type: string
+      required:
+        - "id"
+        - "type"
+        - "status"
+        - "status_code"
+        - "created_at"
+        - "updated_at"
+
+    JobErrorDetail:
+      type: object
+      properties:
+        "class":
+          type: string
+          enum:
+            - "warning"
+            - "error"
+        "type":
+          type: string
+        "title":
+          type: string
+        "detail":
+          type: string
+        "resolution":
+          type: string
+
+    FeedJobProperties:
+      type: object
+      properties:
+        feed_data_type:
+          enum:
+            - "product"
+            - "content"
+          type: string
+        feed_mode:
+          enum:
+            - "full"
+            - "delta"
+          type: string
+        input_source:
+          enum:
+            - "sftp_file_upload"
+            - "api_request_body"
+          type: string
+        input_filenames:
+          type: array
+          items:
+            type: string
+
+    ProductFeedJobStats:
+      type: object
+      properties:
+        "patch_operation_count":
+          type: integer
+        "patch_operation_add_product_count":
+          type: integer
+        "patch_operation_add_product_attribute_count":
+          type: integer
+        "patch_operation_add_product_attributes_count":
+          type: integer
+        "patch_operation_add_product_variant_count":
+          type: integer
+        "patch_operation_add_product_variant_attribute_count":
+          type: integer
+        "patch_operation_add_product_variant_attributes_count":
+          type: integer
+        "patch_operation_add_product_variants_count":
+          type: integer
+        "patch_operation_add_product_view_count":
+          type: integer
+        "patch_operation_add_product_view_attribute_count":
+          type: integer
+        "patch_operation_add_product_view_attributes_count":
+          type: integer
+        "patch_operation_add_product_views_count":
+          type: integer
+        "patch_operation_add_product_views_group_count":
+          type: integer
+        "patch_operation_add_product_views_variant_count":
+          type: integer
+        "patch_operation_add_product_view_variant_count":
+          type: integer
+        "patch_operation_add_product_view_variant_attribute_count":
+          type: integer
+        "patch_operation_add_product_view_variant_attributes_count":
+          type: integer
+        "patch_operation_add_product_view_variant_exclusion_count":
+          type: integer
+        "patch_operation_add_product_view_variants_count":
+          type: integer
+        "patch_operation_remove_product_count":
+          type: integer
+        "patch_operation_remove_product_attribute_count":
+          type: integer
+        "patch_operation_remove_product_attributes_count":
+          type: integer
+        "patch_operation_remove_product_variant_count":
+          type: integer
+        "patch_operation_remove_product_variant_attribute_count":
+          type: integer
+        "patch_operation_remove_product_variant_attributes_count":
+          type: integer
+        "patch_operation_remove_product_variants_count":
+          type: integer
+        "patch_operation_remove_product_view_count":
+          type: integer
+        "patch_operation_remove_product_view_attribute_count":
+          type: integer
+        "patch_operation_remove_product_view_attributes_count":
+          type: integer
+        "patch_operation_remove_product_views_count":
+          type: integer
+        "patch_operation_remove_product_views_group_count":
+          type: integer
+        "patch_operation_remove_product_views_groups_count":
+          type: integer
+        "patch_operation_remove_product_view_variant_count":
+          type: integer
+        "patch_operation_remove_product_view_variant_attribute_count":
+          type: integer
+        "patch_operation_remove_product_view_variant_attributes_count":
+          type: integer
+        "patch_operation_remove_product_view_variants_count":
+          type: integer
+        "patch_operation_update_product_count":
+          type: integer
+        "patch_operation_update_product_attributes_count":
+          type: integer
+        "patch_operation_update_product_view_count":
+          type: integer
+        "patch_operation_update_product_view_attributes_count":
+          type: integer
+
+    ProductIndexJobStats:
+      type: object
+      properties:
+        "search_product_count":
+          type: integer
+        "search_document_count":
+          type: integer
+        "search_documents_byte_count":
+          type: integer
+        "deleted_parent_count":
+          type: integer
+        "product_doc_count":
+          type: integer
+        "variant_doc_count":
+          type: integer
+        "search_variant_count":
+          type: integer
+        "products_no_title_count":
+          type: integer
+        "products_no_url_count":
+          type: integer
+        "invalid_products_count":
+          type: integer
+        "invalid_variants_count":
+          type: integer
+        "invalid_products_no_price_data_count":
+          type: integer
+        "invalid_products_invalid_price_data_count":
+          type: integer
+        "invalid_products_empty_product_id_count":
+          type: integer
+        "invalid_variants_no_price_data_count":
+          type: integer
+        "unavailable_products_count":
+          type: integer
+        "unavailable_variants_count":
+          type: integer
+        "unavailable_products_all_variants_unavailable_count":
+          type: integer
+        "modified_product_record_count":
+          type: integer
+        "modified_variant_record_count":
+          type: integer
+
+    ContentFeedJobStats:
+      type: object
+      properties:
+        "patch_operation_count":
+          type: integer
+        "patch_operation_add_item_count":
+          type: integer
+        "patch_operation_add_item_view_count":
+          type: integer
+        "patch_operation_add_item_views_count":
+          type: integer
+        "patch_operation_add_item_attributes_count":
+          type: integer
+        "patch_operation_add_item_view_attributes_count":
+          type: integer
+        "patch_operation_add_item_attribute_count":
+          type: integer
+        "patch_operation_add_item_view_attribute_count":
+          type: integer
+        "patch_operation_remove_item_count":
+          type: integer
+        "patch_operation_remove_item_views_count":
+          type: integer
+        "patch_operation_remove_item_views_attribute_count":
+          type: integer
+        "patch_operation_remove_item_views_attributes_count":
+          type: integer
+        "patch_operation_remove_item_view_count":
+          type: integer
+        "patch_operation_remove_item_view_attribute_count":
+          type: integer
+        "patch_operation_remove_item_view_attributes_count":
+          type: integer
+
+    ContentIndexJobStats:
+      type: object
+      properties:
+        "item_doc_count":
+          type: integer
+        "search_item_count":
+          type: integer
+        "deleted_parent_count":
+          type: integer
+
+    IndexJobProperties:
+      type: object
+      properties:
+        index_data_type:
+          enum:
+            - "product"
+            - "content"
+        index_mode:
+          enum:
+            - "update"
+          type: string
+        ignore_count_drop:
+          type: boolean
+        config_etag:
+          description: The catalog configuration version used at time of job processing.
+          type: string
+          example: 3613f704b80020ef908f0375100fbd1d
+        index_config_etag:
+          description: The index configuration version used at time of job processing.
+          type: string
+          example: 3613f704b80020ef908f0375100fbd1d
+
+    SuggestJobProperties:
+      type: object
+
+    ProductCatalog:
+      type: object
+      properties:
+        "name":
+          type: string
+        "language":
+          type: string
+        "data_type":
+          type: string
+        "environment":
+          type: string
+        "config_etag":
+          type: string
+        "stats":
+          $ref: "#/components/schemas/ProductCatalogStats"
+        "properties":
+          $ref: "#/components/schemas/ProductCatalogProperties"
+
+    ProductCatalogStats:
+      type: object
+      properties:
+        "last_index_update_config_etag":
+          description: ""
+          type: string
+          example: "5613f704b80030ef908f1395100fbd1d"
+        "last_index_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_index_refresh_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_feed_full_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_feed_delta_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_keyword_suggest_refresh_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "product_record_count":
+          description: ""
+          type: integer
+        "variant_record_count":
+          description: ""
+          type: integer
+        "product_doc_count":
+          description: ""
+          type: integer
+        "product_doc_byte_count":
+          description: ""
+          type: integer
+        "variant_doc_count":
+          description: ""
+          type: integer
+        "variant_doc_byte_count":
+          description: ""
+          type: integer
+        "catalog_searchable_byte_count":
+          description: ""
+          type: integer
+        "catalog_displayable_byte_count":
+          description: ""
+          type: integer
+        "catalog_facetable_manual_byte_count":
+          description: ""
+          type: integer
+        "catalog_facetable_auto_byte_count":
+          description: ""
+          type: integer
+        "product_view_override_record_count":
+          description: ""
+          type: integer
+        "variant_view_override_record_count":
+          description: ""
+          type: integer
+        "unique_view_count":
+          description: ""
+          type: integer
+
+    ProductCatalogProperties:
+      type: object
+      properties:
+        "feed_version":
+          description: ""
+          type: integer
+        "index_version":
+          description: ""
+          type: integer
+
+    ContentCatalog:
+      type: object
+      properties:
+        "name":
+          type: string
+        "language":
+          type: string
+        "data_type":
+          type: string
+        "environment":
+          type: string
+        "config_etag":
+          type: string
+        "stats":
+          $ref: "#/components/schemas/ContentCatalogStats"
+
+    ContentCatalogStats:
+      type: object
+      properties:
+        "last_index_update_config_etag":
+          description: ""
+          type: string
+          example: "5613f704b80030ef908f1395100fbd1d"
+        "last_index_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_feed_full_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "last_feed_delta_update_at":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "item_doc_count":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "item_record_count":
+          description: ""
+          format: date-time
+          type: string
+          example: "2024-01-01T00:00:00.000000Z"
+        "item_view_override_record_count":
+          description: ""
+          type: integer
+
+    Product:
+      description: ""
+      type: object
+      properties:
+        "attributes":
+          type: object
+        "variants":
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProductVariant"
+        "views":
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProductView"
+      required:
+        - "attributes"
+
+    ProductSummary:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+        "variant_record_count":
+          type: integer
+        "view_count":
+          type: integer
+        "product_view_override_record_count":
+          type: integer
+        "variant_view_override_record_count":
+          type: integer
+      required:
+        - "id"
+        - "attributes"
+
+    ProductVariant:
+      type: object
+      properties:
+        "attributes":
+          type: object
+      required:
+        - "attributes"
+
+    ProductVariantSummary:
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+      required:
+        - "id"
+        - "attributes"
+
+    ProductView:
+      description: ""
+      type: object
+      properties:
+        "attributes":
+          type: object
+        "variants":
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProductVariantView"
+      required:
+        - "attributes"
+        - "variants"
+
+    ProductViewSummary:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+        "variant_override_record_count":
+          type: integer
+      required:
+        - "id"
+        - "attributes"
+        - "variant_override_record_count"
+
+    ProductViewsetPreview:
+      description: ""
+      type: object
+      properties:
+        "view_ids":
+          type: array
+          items:
+            type: string
+        "variants":
+          type: object
+        "attributes":
+          type: object
+      required:
+        - "view_ids"
+        - "variants"
+        - "attributes"
+
+    ProductViewPreview:
+      description: ""
+      type: object
+      properties:
+        "variants":
+          type: object
+        "attributes":
+          type: object
+      required:
+        - "variants"
+        - "attributes"
+
+    ProductVariantView:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+        "exclude_from_view":
+          type: boolean
+      required:
+        - "id"
+        - "attributes"
+        - "exclude_from_view"
+
+    ProductVariantViewSummary:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+        "exclude_from_view":
+          type: boolean
+      required:
+        - "id"
+        - "attributes"
+        - "exclude_from_view"
+
+    Item:
+      description: ""
+      type: object
+      properties:
+        "attributes":
+          type: object
+        "views":
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ItemView"
+      required:
+        - "attributes"
+
+    ItemSummary:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+        "view_count":
+          type: integer
+      required:
+        - "id"
+        - "attributes"
+
+    ItemView:
+      description: ""
+      type: object
+      properties:
+        "attributes":
+          type: object
+      required:
+        - "attributes"
+
+    ItemViewSummary:
+      description: ""
+      type: object
+      properties:
+        "id":
+          type: string
+        "attributes":
+          type: object
+      required:
+        - "id"
+        - "attributes"
+
+    ItemViewsetPreview:
+      description: ""
+      type: object
+      properties:
+        "view_ids":
+          type: array
+          items:
+            type: string
+        "attributes":
+          type: object
+      required:
+        - "view_ids"
+        - "attributes"
+
+    ItemViewPreview:
+      description: ""
+      type: object
+      properties:
+        "attributes":
+          type: object
+      required:
+        - "attributes"
+
+    ErrorResponse:
+      type: object
+      properties:
+        "type":
+          type: string
+        "title":
+          type: string
+        "detail":
+          type: string
+        "class":
+          type: string
+          enum:
+            - "error"
+            - "warning"
+
+    404Response:
+      description: "Not Found"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    406Response:
+      description: "Not Acceptable"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    412Response:
+      description: "Precondition Failed"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    413Response:
+      description: "Content Too Large"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    429Response:
+      description: "Too Many Requests"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    500Response:
+      description: "Internal Server Error"
+      type: object
+      properties:
+        "details":
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
+
+security:
+  - bearerAuth: []

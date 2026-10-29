@@ -1,0 +1,352 @@
+openapi: 3.0.3
+info:
+  title: Abstract Avatars API
+  description: 'Generate a square avatar image from a name, returning the initials
+    rendered on a colored background. Customize the size, format, font, colors, and
+    style. The response is a binary image (PNG or SVG). Authenticate with your API
+    key as the `api_key` query parameter, or as an `Authorization: Bearer <key>`
+    header. GET and POST (form-encoded or JSON) are both supported.'
+  version: 1.0.0
+  termsOfService: https://www.abstractapi.com/legal/legal
+  contact:
+    name: Abstract API
+    url: https://www.abstractapi.com
+  license:
+    name: Commercial — see Terms of Service
+    url: https://www.abstractapi.com/legal/legal
+externalDocs:
+  description: Official documentation
+  url: https://docs.abstractapi.com/api/avatars
+servers:
+- url: https://avatars.abstractapi.com/v1
+security:
+- ApiKeyQuery: []
+- BearerAuth: []
+paths:
+  /:
+    get:
+      operationId: getAvatar
+      summary: Generate an avatar image from a name
+      description: 'Generate an avatar image from a name. The response is a binary
+        image (PNG or SVG, per `image_format`). The API key may be supplied as the
+        `api_key` query parameter or as an `Authorization: Bearer <key>` header.'
+      parameters:
+      - name: name
+        in: query
+        required: true
+        description: The name you want to create an avatar for. The initials are
+          derived from this value.
+        schema:
+          type: string
+        example: Claire Florentz
+      - name: image_size
+        in: query
+        required: false
+        description: Size of the square avatar image in pixels. Available from 6 to
+          512 pixels.
+        schema:
+          type: integer
+          minimum: 6
+          maximum: 512
+          default: 128
+        example: 128
+      - name: image_format
+        in: query
+        required: false
+        description: Desired format of the returned image.
+        schema:
+          type: string
+          enum:
+          - png
+          - svg
+          default: png
+        example: png
+      - name: font_size
+        in: query
+        required: false
+        description: Size of the font as a fraction of the image size. Can be set
+          between 0.1 and 1.0.
+        schema:
+          type: number
+          format: float
+          minimum: 0.1
+          maximum: 1.0
+          default: 0.7
+        example: 0.7
+      - name: char_limit
+        in: query
+        required: false
+        description: Maximum number of characters (initials) displayed in the avatar.
+        schema:
+          type: integer
+          default: 2
+        example: 2
+      - name: background_color
+        in: query
+        required: false
+        description: Hex color for the background. Do not include the leading '#'.
+        schema:
+          type: string
+          default: '335eea'
+        example: '335eea'
+      - name: font_color
+        in: query
+        required: false
+        description: Hex color for the font. Do not include the leading '#'.
+        schema:
+          type: string
+          default: ffffff
+        example: ffffff
+      - name: is_rounded
+        in: query
+        required: false
+        description: Returns a rounded avatar picture instead of a squared one.
+        schema:
+          type: boolean
+          default: false
+        example: false
+      - name: is_uppercase
+        in: query
+        required: false
+        description: Sets the initials in the avatar to all capitals.
+        schema:
+          type: boolean
+          default: true
+        example: true
+      - name: is_italic
+        in: query
+        required: false
+        description: Sets the initials in the avatar to italics.
+        schema:
+          type: boolean
+          default: false
+        example: false
+      - name: is_bold
+        in: query
+        required: false
+        description: Sets the initials in the avatar to bold.
+        schema:
+          type: boolean
+          default: false
+        example: false
+      responses:
+        '200':
+          description: The generated avatar image. The media type is image/png by
+            default, or image/svg+xml when `image_format` is svg.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/QuotaReached'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      operationId: postAvatar
+      summary: Generate an avatar image from a name
+      description: 'Same as the GET operation. The API key may be supplied in the
+        request body, as the `api_key` query parameter, or as an `Authorization:
+        Bearer <key>` header.'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AvatarRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvatarRequest'
+      responses:
+        '200':
+          description: The generated avatar image. The media type is image/png by
+            default, or image/svg+xml when `image_format` is svg.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/svg+xml:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/QuotaReached'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  securitySchemes:
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+      description: Your unique Avatars API key.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Send your API key as a Bearer token; omit `api_key` from the query
+        string.
+  responses:
+    BadRequest:
+      description: Bad request — a required parameter is missing or failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: A validation error occurred.
+              code: validation_error
+              details:
+                name:
+                - This is a required argument.
+    Unauthorized:
+      description: Unauthorized — missing or invalid API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              message: Invalid API key provided.
+              code: unauthorized
+              details: null
+    QuotaReached:
+      description: Unprocessable — monthly quota reached or insufficient API credits.
+        The body follows the standard error envelope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too Many Requests — rate limit exceeded. The body follows the standard
+        error envelope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Internal server error. The body follows the standard error envelope.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    AvatarRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The name you want to create an avatar for. The initials are
+            derived from this value.
+          example: Claire Florentz
+        image_size:
+          type: integer
+          minimum: 6
+          maximum: 512
+          default: 128
+          description: Size of the square avatar image in pixels. Available from 6
+            to 512 pixels.
+          example: 128
+        image_format:
+          type: string
+          enum:
+          - png
+          - svg
+          default: png
+          description: Desired format of the returned image.
+          example: png
+        font_size:
+          type: number
+          format: float
+          minimum: 0.1
+          maximum: 1.0
+          default: 0.7
+          description: Size of the font as a fraction of the image size. Can be set
+            between 0.1 and 1.0.
+          example: 0.7
+        char_limit:
+          type: integer
+          default: 2
+          description: Maximum number of characters (initials) displayed in the avatar.
+          example: 2
+        background_color:
+          type: string
+          default: '335eea'
+          description: Hex color for the background. Do not include the leading '#'.
+          example: '335eea'
+        font_color:
+          type: string
+          default: ffffff
+          description: Hex color for the font. Do not include the leading '#'.
+          example: ffffff
+        is_rounded:
+          type: boolean
+          default: false
+          description: Returns a rounded avatar picture instead of a squared one.
+          example: false
+        is_uppercase:
+          type: boolean
+          default: true
+          description: Sets the initials in the avatar to all capitals.
+          example: true
+        is_italic:
+          type: boolean
+          default: false
+          description: Sets the initials in the avatar to italics.
+          example: false
+        is_bold:
+          type: boolean
+          default: false
+          description: Sets the initials in the avatar to bold.
+          example: false
+        api_key:
+          type: string
+          description: 'Your API key. Optional here if supplied as the `api_key` query
+            parameter or an `Authorization: Bearer <key>` header.'
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - message
+          - code
+          properties:
+            message:
+              type: string
+              description: Human-readable description of the error.
+              example: A validation error occurred.
+            code:
+              type: string
+              description: Machine-readable error code, e.g. validation_error or unauthorized.
+              example: validation_error
+            details:
+              type: object
+              nullable: true
+              description: Field-keyed validation messages for validation_error responses;
+                null for other error types.
+              additionalProperties:
+                type: array
+                items:
+                  type: string
