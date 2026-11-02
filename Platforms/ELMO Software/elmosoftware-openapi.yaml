@@ -1,0 +1,5258 @@
+openapi: 3.0.2
+info:
+  title: ELMO User API
+  version: v1-rc3
+  description: |
+
+
+    # Overview
+
+      The ELMO API is a RESTful based API that facilitates user information management within the ELMO ecosystem. Our API is designed to empower businesses, including our valued customers and partners, in creating scalable integration solutions aligned with their evolving business needs. By using this API, you gain access to invaluable HR data, enabling you to supercharge your applications and integrations, driving efficient workflows and enhancing core business processes. The below section provides an overview of the current capabilities of the API:
+
+      * Get users list
+      * Get an individual user's details
+      * Get a user template to create a new user
+      * Create new user
+      * Get positions list
+      * Get locations list
+      * Get department list
+      * Get metadata of configurable fields
+      * Get all users employment details
+      * Get an individual user's employment details
+      * Get legal entity details
+      * Get payroll calendar details
+      * Get leave request details
+      * Get leave type details
+
+      Note that this is the latest version of the API Documentation that utilises OAuth2 authentication. The previous version of the documentation can be found at [API Documentation version 1](/v1/index.html)
+      <br />
+      <br />
+      Please be advised that endpoints labelled as beta are intended for customer testing and feedback and may change based on feedback, potentially impacting backward compatibility. Consider this before integrating it with production systems to avoid disruptions to your integrations.
+      
+      
+
+      <br />
+
+    ---
+
+      <br />
+    # Authentication
+
+      ELMO API utlises OAuth2.0 authentication. Company Admins are able to create and manage API Credentials.
+
+    <br />
+
+    ---
+
+      <br />
+    # API Rate Limits
+
+      There are limits applied to the number of API requests your application can make. This limit is lower in sandbox and higher in production environments.
+      The ELMO User API also supports custom usage plans to scale with your organisation's needs.
+
+      Sandbox Environment
+      * **Rate limit**: 1 request per second
+      * **Burst limit**: 10
+      * **Quota**: 500 requests in 1 day
+
+      Production Environment
+      * **Rate limit**: 1 requests per second
+      * **Burst limit**: 10
+      * **Quota**: 5000 requests in 1 day
+
+    <br />
+
+    ---
+
+      <br />
+    # Generating Client SDKs
+
+      You can use the OpenAPI Specification file to generate a client SDK. You can download the file from [here](index.yaml). Then use the tool of your choice to generate a client SDK. You can get started [here](https://swagger.io/tools/swagger-codegen/).
+
+    <br />
+  x-logo:
+    url: >-
+      https://assets.elmosoftware.com.au/wp-content/themes/elmoone/img/elmo_logoNEW_CMYK_hrpayroll.png
+x-servers:
+  - url: 'https://api.sandbox.elmotalent.com.au'
+servers:
+  - url: 'https://api.elmotalent.com.au'
+tags:
+  - name: OAuth2.0
+    description: Authenticate using OAuth2.0
+  - name: Users
+    description: Allows you to retrieve Users and Update Personal Contact Details.
+  - name: Onboarding Users
+    description: >-
+      Allows you to retrieve Onboarding Users and convert an Onboarding User to
+      a General User.
+  - name: User Events
+    description: Allows you to trigger events for creating and updating a User
+  - name: Onboarding User Events
+    description: Allows you to trigger events for creating and updating an Onboarding User
+  - name: Departments
+    description: Allows you to retrieve list of Departments
+  - name: Locations
+    description: Allows you to retrieve list of Locations
+  - name: Positions
+    description: Allows you to retrieve list of Positions
+  - name: Metadata
+    description: Allows you to retrieve Metadata of configurable fields
+  - name: Employees
+    description: Allows you to retrieve employment details for users
+  - name: Legal Entities
+    description: Allows you to retrieve details for legal entities
+  - name: Payroll Cycles
+    description: Allows you to retrieve details for payroll calendars/cycles
+  - name: Leave Requests
+    description: Allows you to retrieve details for all leave requests
+  - name: Leave Types
+    description: Allows you to retrieve details for leave types
+  - name: Candidates
+    description: Allows you to retrieve candidate details
+paths:
+  /core/v1/departments:
+    get:
+      summary: Gets all the departments
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of id/s
+        - name: title
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of title
+        - name: departmentId
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of the department Id
+        - name: description
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of descriptions
+        - name: page
+          in: query
+          required: false
+          description: The page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Type of departments to be returned
+          schema:
+            type: boolean
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      tags:
+        - Departments
+      operationId: getDepartmentCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new department
+      tags:
+        - Departments
+      operationId: postDepartmentCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  description: Title of department
+                  type: string
+                  example: Client Services
+                departmentId:
+                  description: ID of current department
+                  type: string
+                  example: '2'
+                description:
+                  description: Description of department
+                  type: string
+                  example: <p>Client Services</p>
+                parent:
+                  description: ID of department parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '201':
+          description: Department created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/departments/{id}':
+    get:
+      summary: Gets a single department
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve Department
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      tags:
+        - Departments
+      operationId: getDepartmentItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update an existing department
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the department to update
+      tags:
+        - Departments
+      operationId: putDepartmentItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  description: Title of department
+                  type: string
+                  example: Client Services
+                departmentId:
+                  description: ID of current department
+                  type: string
+                  example: '2'
+                description:
+                  description: Description of department
+                  type: string
+                  example: <p>Client Services</p>
+                parent:
+                  description: ID of department parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '200':
+          description: Department updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/department-creation-template:
+    get:
+      summary: Get department template schema
+      description: >
+        Returns a JSON schema template for department creation, following the
+        json-schema.org draft-04 specification.
+      parameters: []
+      tags:
+        - Departments
+      operationId: get_departmentTemplateCollection
+      responses:
+        '200':
+          description: Department template schema response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentTemplateEmployeeLed'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/locations:
+    get:
+      summary: Gets all the locations
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of id/s
+        - name: title
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of title
+        - name: locationId
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of the location code
+        - name: description
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of descriptions
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Type of locations to be returned
+          schema:
+            type: boolean
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      tags:
+        - Locations
+      operationId: getLocationCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new location
+      tags:
+        - Locations
+      operationId: postLocationCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  description: Title of location
+                  type: string
+                  example: Perth
+                locationId:
+                  description: >-
+                    This is a unique identifier of location. This is added by
+                    user, which is different with database ID
+                  type: string
+                  example: Perth
+                description:
+                  description: Description of a Location
+                  type: string
+                  nullable: true
+                  example: null
+                addressLine1:
+                  description: First part of the address
+                  type: string
+                  nullable: true
+                  example: null
+                addressLine2:
+                  description: Second part of the address
+                  type: string
+                  nullable: true
+                  example: null
+                suburb:
+                  description: suburb of location
+                  type: string
+                  nullable: true
+                  example: null
+                state:
+                  description: state of location
+                  type: string
+                  nullable: true
+                  example: null
+                postcode:
+                  description: postcode of location
+                  type: string
+                  nullable: true
+                  example: null
+                country:
+                  description: country of location
+                  type: string
+                  nullable: true
+                  example: null
+                parent:
+                  description: ID of location parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '201':
+          description: Location created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/locations/{id}':
+    get:
+      summary: Gets a single location
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve the Location
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      tags:
+        - Locations
+      operationId: getLocationItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Location not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update an existing location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the location to update
+      tags:
+        - Locations
+      operationId: putLocationItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  description: Title of location
+                  type: string
+                  example: Perth
+                locationId:
+                  description: >-
+                    This is a unique identifier of location. This is added by
+                    user, which is different with database ID
+                  type: string
+                  example: Perth
+                description:
+                  description: Description of a Location
+                  type: string
+                  nullable: true
+                  example: null
+                addressLine1:
+                  description: First part of the address
+                  type: string
+                  nullable: true
+                  example: null
+                addressLine2:
+                  description: Second part of the address
+                  type: string
+                  nullable: true
+                  example: null
+                suburb:
+                  description: suburb of location
+                  type: string
+                  nullable: true
+                  example: null
+                state:
+                  description: state of location
+                  type: string
+                  nullable: true
+                  example: null
+                postcode:
+                  description: postcode of location
+                  type: string
+                  nullable: true
+                  example: null
+                country:
+                  description: country of location
+                  type: string
+                  nullable: true
+                  example: null
+                parent:
+                  description: ID of location parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '200':
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Location not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/location-creation-template:
+    get:
+      summary: Gets location template
+      tags:
+        - Locations
+      operationId: getLocationTemplateCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationTemplateEmployeeLed'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/positions:
+    get:
+      summary: Gets all the positions
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of id/s
+        - name: title
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of title
+        - name: positionId
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of the position code
+        - name: description
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of descriptions
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Type of positions to be returned
+          schema:
+            type: boolean
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      tags:
+        - Positions
+      operationId: getPositionCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new position
+      description: '**Note:** We do not support Custom Position Fields'
+      tags:
+        - Positions
+      operationId: postPositionCollection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  description: Title of position
+                  type: string
+                  example: Software Engineer - CYPRESS
+                positionId:
+                  description: >-
+                    This is a unique identifier of position. This is added by
+                    user, which is different with database ID
+                  type: string
+                  example: '4783222'
+                description:
+                  description: Description of position
+                  type: string
+                  example: .Net Software Engineer
+                qualifications:
+                  description: >-
+                    Qualifications of position. This is just a text field and
+                    explains the qualifications
+                  type: string
+                  example: .Net Software Engineer
+                parent:
+                  description: ID of position parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '201':
+          description: Position created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/positions/{id}':
+    get:
+      tags:
+        - Positions
+      operationId: getPositionItem
+      summary: Gets a single position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: false
+          description: >-
+            Format for description field - 'HTML' preserves formatting
+            (default), 'TEXT' removes HTML tags
+          schema:
+            type: string
+            enum:
+              - HTML
+              - TEXT
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Position not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update an existing position
+      description: '**Note:** We do not support Custom Position Fields'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Identifier of the position to update
+      tags:
+        - Positions
+      operationId: putPositionItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  description: Title of position
+                  type: string
+                  example: Software Engineer - CYPRESS
+                positionId:
+                  description: >-
+                    This is a unique identifier of position. This is added by
+                    user, which is different with database ID
+                  type: string
+                  example: '4783222'
+                description:
+                  description: Description of position
+                  type: string
+                  example: .Net Software Engineer
+                qualifications:
+                  description: >-
+                    Qualifications of position. This is just a text field and
+                    explains the qualifications
+                  type: string
+                  example: .Net Software Engineer
+                parent:
+                  description: ID of position parent
+                  type: string
+                  nullable: true
+                  example: null
+      responses:
+        '200':
+          description: Position updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionMutate'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Position not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/position-creation-template:
+    get:
+      summary: Get position template schema
+      description: >
+        Returns a JSON schema template for position creation, following the
+        json-schema.org draft-04 specification.
+      parameters: []
+      tags:
+        - Positions
+      operationId: get_positionTemplateCollection
+      responses:
+        '200':
+          description: Position template schema response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionTemplateEmployeeLed'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/leave-types:
+    get:
+      summary: Gets all leave types
+      description: ''
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of ids
+        - name: title
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of title
+        - name: accrualType
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact match of type
+        - name: page
+          in: query
+          required: false
+          description: The page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Deleted status of leave types
+          schema:
+            type: boolean
+      tags:
+        - Leave Types
+      operationId: getLeaveTypeCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaveType'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/leave-types/{id}':
+    get:
+      summary: Gets a single leave type
+      description: ''
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve Leave Type
+      tags:
+        - Leave Types
+      operationId: getLeaveTypeItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveType'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: Leave Type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/leave-requests/{id}':
+    get:
+      summary: Gets a single leave request
+      description: ''
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve LeaveRequest
+      tags:
+        - Leave Requests
+      operationId: getLeaveRequestItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '404':
+          description: LeaveRequest not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/leave-requests:
+    get:
+      summary: Gets all the leave request
+      description: ''
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact match of status
+        - name: leaveTypeId
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact match of leave type Id
+      tags:
+        - Leave Requests
+      operationId: getLeaveRequestCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaveRequest'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Forbidden'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/users:
+    get:
+      summary: Gets all the users
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Exact match of Id/s
+          style: deepObject
+          explode: true
+        - name: firstName
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Exact/Partial match of first name
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of last name
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of email
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Type of Users to be returned
+          schema:
+            type: boolean
+        - name: excludeVendorUsers
+          in: query
+          required: false
+          description: Exclude vendor users from the response
+          schema:
+            type: boolean
+      tags:
+        - Users
+      operationId: getUserCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/users/{id}':
+    get:
+      summary: Gets a single user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Users
+      operationId: getUserItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/users/{id}/personal-contact-details':
+    get:
+      summary: Gets personal contact details of a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Users
+      operationId: get_personal-contact-details
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalContactDetails'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Contact Details not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update personal contact details of a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Users
+      operationId: put_personal-contact-details
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: Personal Contact Details Of a User
+              properties:
+                personalEmail:
+                  type: string
+                  nullable: true
+                  example: john.smith@test.com
+                homePhoneCountryCode:
+                  type: string
+                  nullable: true
+                  example: '01'
+                homePhoneAreaCode:
+                  type: string
+                  nullable: true
+                  example: '234'
+                homePhone:
+                  type: string
+                  nullable: true
+                  example: '5678900'
+                workPhone:
+                  type: string
+                  nullable: true
+                  example: 0123456789
+                mobileCountryCode:
+                  type: string
+                  nullable: true
+                  example: '01'
+                mobileAreaCode:
+                  type: string
+                  nullable: true
+                  example: '234'
+                personalMobile:
+                  type: string
+                  nullable: true
+                  example: '5678900'
+                addressLine1:
+                  type: string
+                  nullable: true
+                  example: 580 George street
+                addressLine2:
+                  type: string
+                  nullable: true
+                  example: townhall
+                suburb:
+                  type: string
+                  nullable: true
+                  example: Sydney
+                state:
+                  type: string
+                  nullable: true
+                  example: NSW
+                postCode:
+                  type: string
+                  nullable: true
+                  example: '2000'
+                country:
+                  type: string
+                  nullable: true
+                  example: AU
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PersonalContactDetailsMutate'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/users/{id}/activate':
+    post:
+      summary: Activate a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Users
+      operationId: post_activate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/MutationResponse'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/users/{id}/deactivate':
+    post:
+      summary: Deactivate a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Users
+      operationId: post_deactivate
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/MutationResponse'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /oauth/token:
+    post:
+      summary: Retrieve an access token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - client_credentials
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+      tags:
+        - OAuth2.0
+      operationId: getOauthAccessToken
+      security: []
+      responses:
+        '200':
+          description: Success - the retrieved token expires after 30 minutes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OauthToken'
+        '400':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OauthTokenErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/onboarding-users:
+    get:
+      summary: Gets all the onboarding users
+      parameters:
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Exact match of Id/s
+          style: deepObject
+          explode: true
+        - name: firstName
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Exact/Partial match of first name
+        - in: query
+          name: lastName
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of last name
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of email
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+        - name: deleted
+          in: query
+          required: false
+          description: Type of Onboarding Users to be returned
+          schema:
+            type: boolean
+      tags:
+        - Onboarding Users
+      operationId: getOnboardingUserCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OnboardingUser'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/onboarding-users/{id}':
+    get:
+      summary: Gets a single onboarding user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Onboarding Users
+      operationId: getOnboardingUserItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUser'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Onboarding User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/onboarding-users/{id}/convert':
+    post:
+      summary: Converts a single onboarding user to a general user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Onboarding Users
+      operationId: postOnboardingUserConvert
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CommonMutationResponse'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Onboarding User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/user-creation-events:
+    post:
+      tags:
+        - User Events
+      operationId: postUserCreationEventCollection
+      summary: Triggers an event to create a new user
+      description: >
+        The word **Event** is used to highlight asynchronous requests. Instead
+        of creating a new user, you are Posting an event that will
+        **eventually** create a new user. After your payload is validated, you
+        get back a user event id. You then need to fire a request at `GET
+        user-creation-events/{id}` to get the newly created user's id.
+
+
+        Because the payload for creating a user varies and is a fluid schema
+        (schema changes based on configurations), you need to get the template
+        by visiting `GET /user-creation-template`.
+
+
+        User will be created with role "Employee" by default.
+
+
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include the value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint supports updating both the standard user profile fields and the
+        custom field types, which include text fields, date fields, menus,
+        tiered menus, or checkboxes. Do note, this format version option is an
+        early Beta release.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: >
+            Success
+
+
+            The term **entityName** points to the type of entity/resource that
+            was created through posting this event. In this case, the entity
+            name will indicate that a new user was created. The **id** is the
+            new id of the resource. **Logs** will indciate a detailed view of
+            what went well and what went wrong.
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+          links:
+            GetUserCreationEventItem:
+              parameters:
+                id: '$response.body#/id'
+              operationId: getUserCreationEventItem
+              description: >-
+                The `id` value returned in the response can be used as the `id`
+                parameter in `GET /user-creation-events/{id}`.
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/onboarding-user-creation-events:
+    post:
+      tags:
+        - Onboarding User Events
+      operationId: postOnboardingUserCreationEventCollection
+      summary: Triggers an event to create a new onboarding user
+      description: >
+        The word **Event** is used to highlight asynchronous requests. Instead
+        of creating a new onboarding user, you are Posting an event that will
+        **eventually** create a new user. After your payload is validated, you
+        get back a user event id. You then need to fire a request at `GET
+        onboarding-user-creation-events/{id}` to get the newly created user's
+        id.
+
+
+        Because the payload for creating a user varies and is a fluid schema
+        (schema changes based on configurations), you need to get the template
+        by visiting `GET /onboarding-user-creation-template`.
+
+
+        Onboarding User will be created with role "Employee" by default.
+
+
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include the value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint supports updating both the standard onboarding user profile
+        fields and the custom field types, which include text fields, date
+        fields, menus, tiered menus, or checkboxes. Do note, this format version
+        option is an early Beta release.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: >
+            Success
+
+
+            The term **entityName** points to the type of entity/resource that
+            was created through posting this event. In this case, the entity
+            name will indicate that a new user was created. The **id** is the
+            new id of the resource. **Logs** will indciate a detailed view of
+            what went well and what went wrong.
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+          links:
+            GetOnboardingUserCreationEventItem:
+              parameters:
+                id: '$response.body#/id'
+              operationId: getOnboardingUserCreationEventItem
+              description: >-
+                The `id` value returned in the response can be used as the `id`
+                parameter in `GET /onboarding-user-creation-events/{id}`.
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Onboarding User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/user-update-events:
+    post:
+      tags:
+        - User Events
+      operationId: updateUserCreationEventCollection
+      summary: Triggers an event to update an existing user.
+      description: >
+        The word **Event** is used to highlight asynchronous requests. Instead
+        of updating a user, you are Posting an event that will **eventually**
+        update a new user. After your payload is validated, you get back a user
+        event id. You then need to fire a request at `GET
+        user-update-events/{id}` to get the status of update event.
+
+
+        Because the payload for updating a user varies and is a fluid schema
+        (schema changes based on configurations), you need to get the template
+        by visiting `GET /user-creation-template`.
+
+
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include the value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint supports updating both the standard user profile fields and the
+        custom field types, which include text fields, date fields, menus,
+        tiered menus, or checkboxes. Do note, this format version option is an
+        early Beta release.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: >
+            Success
+
+
+            The term **entityName** points to the type of entity/resource that
+            was created through posting this event. In this case, the entity
+            name will indicate that a user was updated. The **id** is the id of
+            the event that create. **Logs** will indciate a detailed view of
+            what went well and what went wrong.
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+          links:
+            GetUserCreationEventItem:
+              parameters:
+                id: '$response.body#/id'
+              operationId: getUserUpdateEventItem
+              description: >-
+                The `id` value returned in the response can be used as the `id`
+                parameter in `GET /user-update-events/{id}`.
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/onboarding-user-update-events:
+    post:
+      tags:
+        - Onboarding User Events
+      operationId: updateOnboardingUserCreationEventCollection
+      summary: Triggers an event to update an existing onboarding user.
+      description: >
+        The word **Event** is used to highlight asynchronous requests. Instead
+        of updating an onboarding user, you are Posting an event that will
+        **eventually** update a new user. After your payload is validated, you
+        get back a user event id. You then need to fire a request at `GET
+        onboarding-user-update-events/{id}` to get the status of update event.
+
+
+        Because the payload for updating an onboarding user varies and is a
+        fluid schema (schema changes based on configurations), you need to get
+        the template by visiting `GET /onboarding-user-creation-template`.
+
+
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include the value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint supports updating both the standard onboarding user profile
+        fields and the custom field types, which include text fields, date
+        fields, menus, tiered menus, or checkboxes. Do note, this format version
+        option is an early Beta release.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: >
+            Success
+
+
+            The term **entityName** points to the type of entity/resource that
+            was created through posting this event. In this case, the entity
+            name will indicate that a user was updated. The **id** is the id of
+            the event that create. **Logs** will indciate a detailed view of
+            what went well and what went wrong.
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+          links:
+            GetOnboardingUserCreationEventItem:
+              parameters:
+                id: '$response.body#/id'
+              operationId: getOnboardingUserUpdateEventItem
+              description: >-
+                The `id` value returned in the response can be used as the `id`
+                parameter in `GET /onboarding-user-update-events/{id}`.
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/user-creation-events/{id}':
+    get:
+      summary: Retrieves specific user creation event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - User Events
+      operationId: getUserCreationEventItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/onboarding-user-creation-events/{id}':
+    get:
+      summary: Retrieves specific onboarding user creation event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Onboarding User Events
+      operationId: getOnboardingUserCreationEventItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/user-update-events/{id}':
+    get:
+      summary: Retrieves specific user update event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - User Events
+      operationId: getUserUpdateEventItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEvents'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/onboarding-user-update-events/{id}':
+    get:
+      summary: Retrieves specific onboarding user update event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Onboarding User Events
+      operationId: getOnboardingUserUpdateEventItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserEvents'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityExtended'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/user-creation-template:
+    get:
+      summary: Get all the profile data of a user
+      description: >
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include the value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint returns the schema to set the standard user profile fields and
+        the custom field types, which includes custom text, date, menu, tiered
+        menu, or checkbox fields. Do note, this format version option is an
+        early Beta release.
+      parameters: []
+      tags:
+        - User Events
+      operationId: get_usercreationtemplateUserCreationTemplateCollection
+      responses:
+        '200':
+          description: >-
+            UserCreationTemplate collection response will return json schema
+            matching https://json-schema.org/draft-04/schema#
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/UserCreationTemplate'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreationTemplate'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/onboarding-user-creation-template:
+    get:
+      summary: Get all the profile data of an onboarding user
+      description: >
+        If the ability to set custom field values of type checkbox, menu, or
+        tiered menu is required, then the Accept Header must include value
+        "application/vnd.elmo.core.user.v2+json" This will ensure that the
+        endpoint returns the schema to set the standard onboarding user profile
+        fields and the custom field types, which includes custom text, date,
+        menu, tiered menu, or checkbox fields. Do note, this format version
+        option is an early Beta release.
+      parameters: []
+      tags:
+        - Onboarding User Events
+      operationId: >-
+        get_onboardingusercreationtemplateOnboardingUserCreationTemplateCollection
+      responses:
+        '200':
+          description: >-
+            OnboardingUserCreationTemplate collection response will return json
+            schema matching https://json-schema.org/draft-04/schema#
+          content:
+            application/vnd.elmo.core.user.v2+json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserCreationTemplate'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingUserCreationTemplate'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/employees:
+    get:
+      summary: Get employment details of all employees
+      tags:
+        - Employees
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: The page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+      operationId: getEmploymentDetailsCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    nullable: true
+                    items:
+                      $ref: '#/components/schemas/Employee'
+                  metadata:
+                    type: object
+                    nullable: true
+                    properties:
+                      itemsPerPage:
+                        type: number
+                        example: 20
+                      page:
+                        type: number
+                        example: 1
+                      totalItems:
+                        type: number
+                        example: 1
+                      lastPage:
+                        type: number
+                        example: 1
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorServerInternal'
+  '/core/v1/employees/{id}':
+    get:
+      summary: Get a single employment details by Id
+      tags:
+        - Employees
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      operationId: getEmploymentDetailsItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Employment Details not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorServerInternal'
+  /core/v1/metadata/user:
+    get:
+      summary: Gets metadata of configurable User fields
+      tags:
+        - Metadata
+      operationId: getUserMetadataCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertyMetadata'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/metadata/position:
+    get:
+      summary: Get metadata of configurable Position fields
+      tags:
+        - Metadata
+      operationId: getPositionCustomFieldsMetadataCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertyMetadata'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/metadata/personal-contact-details:
+    get:
+      summary: Get metadata of configurable personal contact detail fields
+      tags:
+        - Metadata
+      operationId: getPersonalContactDetailsMetadataCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertyMetadata'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/legal-entities:
+    get:
+      summary: Gets all the legal entities
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of id/s
+        - name: businessName
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: tradingName
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: abn
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: branchNumber
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: contactName
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: phone
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: fax
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: email
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: page
+          in: query
+          required: false
+          description: The collection page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+      tags:
+        - Legal Entities
+      operationId: getLegalEntitityCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LegalEntity'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/legal-entities/{id}':
+    get:
+      summary: Gets a single legal entity
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve the legal entity
+      tags:
+        - Legal Entities
+      operationId: getLegalEntitiyItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalEntity'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: LegalEntity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /core/v1/payroll-cycles:
+    get:
+      summary: Gets all the payroll cycles
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: deepObject
+          explode: true
+          required: false
+          description: Exact match of id/s
+        - name: title
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of title
+        - name: description
+          in: query
+          schema:
+            type: string
+          required: false
+          description: Exact/Partial match of description
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - PRORATAACCRUAL
+              - LIMITBASED
+              - FREETEXT
+          required: false
+          description: Type of payroll cycle
+        - name: weeksPerAnnum
+          in: query
+          schema:
+            type: string
+            enum:
+              - 1ST
+              - 15TH
+              - LAST
+          required: false
+          description: Exact match of weeksPerAnnum number
+        - name: page
+          in: query
+          required: false
+          description: The page number
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          required: false
+          description: The number of items per page
+          schema:
+            type: integer
+      tags:
+        - Payroll Cycles
+      operationId: getPayrollCycleCollection
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayrollCycle'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/core/v1/payroll-cycles/{id}':
+    get:
+      summary: Gets a single payroll cycle
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Identifier to retrieve Payroll Cycles
+      tags:
+        - Payroll Cycles
+      operationId: getPayrollCycleItem
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollCycle'
+        '401':
+          description: Unauthorized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: PayrollCycle not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /recruitment/v1/candidates:
+    get:
+      tags:
+        - Candidates
+      summary: Get a list of candidates
+      description: Get a list of candidates
+      operationId: getCandidates
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+        - name: itemsPerPage
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+        - name: id
+          in: query
+          description: Candidate ID
+          required: false
+          schema:
+            type: string
+        - name: firstName
+          in: query
+          description: Candidate's first name
+          required: false
+          schema:
+            type: string
+        - name: lastName
+          in: query
+          description: Candidate's last name
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Candidate's email
+          required: false
+          schema:
+            type: string
+        - name: homePhone
+          in: query
+          description: Candidate's home phone
+          required: false
+          schema:
+            type: string
+        - name: mobile
+          in: query
+          description: Candidate's mobile
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of candidates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateListResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorsGetResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorGetResponse'
+security:
+  - apiKey: []
+  - basicAuth: []
+  - bearerAuth: []
+components:
+  schemas:
+    OauthToken:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: >-
+            eyJqdGkiOiJiY2M4NjI3Ni1mNGU2LTRjMzAtODIwYi0zZWMzNmRhODM5M2YiLCJpYXQiOjE2OTI2NjA0MjUsImV4cCI6MTY5MjfffjIyNSwic2NvcGUiOiIifQ.mip0NertYWfyry3yaUG7xqtrlVYUg9mrtIA2erkLsxa
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 1692662225
+      required:
+        - access_token
+        - token_type
+        - expires_in
+    User:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        identifier:
+          readOnly: true
+          type: string
+          example: john.smith@test.com
+        firstName:
+          description: First name of user
+          type: string
+          example: John
+        lastName:
+          description: Last name of user
+          type: string
+          example: Smith
+        preferredFirstName:
+          description: Preferred first name of user
+          type: string
+          example: John
+          nullable: true
+        preferredLastName:
+          description: Preferred last name of user
+          type: string
+          example: Sm
+          nullable: true
+        username:
+          description: is this read only
+          type: string
+          example: john.smith@test.com
+        email:
+          description: 'Email of user, is this ready only'
+          type: string
+          example: john.smith@test.com
+        active:
+          readOnly: true
+          type: boolean
+          example: true
+        employeeNumber:
+          description: is this read only
+          nullable: true
+          type: string
+          example: 'null'
+        manager:
+          description: Id of the user's manager
+          type: string
+          nullable: true
+          example: ''
+        dateOfBirth:
+          description: the date of birth of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+        startDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        endDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        expiryDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        timezone:
+          type: string
+          nullable: true
+          example: Australia/Sydney
+        country:
+          type: string
+          nullable: true
+          example: Australia
+        state:
+          type: string
+          nullable: true
+          example: Victoria
+        role:
+          type: string
+          nullable: true
+          enum:
+            - EMPLOYEE
+            - MANAGER
+            - COMPANY_ADMIN
+          example: EMPLOYEE
+        mobile:
+          type: string
+          nullable: true
+          example: (08)83308820
+        customData:
+          description: Configurable Custom Fields
+          type: object
+          nullable: true
+          example:
+            customField_email: email@example.com
+            customField_drivers_license: FH4356HVN
+        position:
+          description: 'Current position of this user - /positions/{id}'
+          type: string
+          nullable: true
+          example: /positions/0a000000-00aa-00aa-000a-0000a0000aa0
+        location:
+          description: 'Current location of this user - /locations/{id}'
+          type: string
+          nullable: true
+          example: /locations/0a000000-00aa-00aa-000a-0000a0000aa0
+        department:
+          description: 'Current department of this user - /departments/{id}'
+          type: string
+          nullable: true
+          example: /departments/0a000000-00aa-00aa-000a-0000a0000aa0
+        legalEntity:
+          description: 'Legal Entity attached to this user - /legal-entities/{id}'
+          type: string
+          nullable: true
+          example: /legal-entities/0a000000-00aa-00aa-000a-0000a0000aa0
+        serviceStartDate:
+          description: the service start date of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+      required:
+        - id
+        - identifier
+        - firstName
+        - lastName
+        - username
+        - email
+    UserV2:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          profile_field_sampleText:
+            type: string
+            example: sample text
+          profile_field_sampleDate:
+            type: string
+            example: 2022/12/22
+          profile_field_sampleMenu:
+            type: string
+            example: menu option
+          profile_field_sampleTierMenu:
+            type: string
+            example: sample tier menu option
+          profile_field_sampleCheckboxList:
+            type: array
+            items:
+              type: string
+            example:
+              - value1
+              - value2
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        identifier:
+          readOnly: true
+          type: string
+          example: john.smith@test.com
+        firstName:
+          description: First name of user
+          type: string
+          example: John
+        lastName:
+          description: Last name of user
+          type: string
+          example: Smith
+        preferredFirstName:
+          description: First name of user
+          type: string
+          example: John
+          nullable: true
+        preferredLastName:
+          description: Last name of user
+          type: string
+          example: Sm
+          nullable: true
+        username:
+          description: is this read only
+          type: string
+          example: john.smith@test.com
+        email:
+          description: 'Email of user, is this ready only'
+          type: string
+          example: john.smith@test.com
+        active:
+          readOnly: true
+          type: boolean
+          example: true
+        employeeNumber:
+          description: is this read only
+          nullable: true
+          type: string
+          example: 'null'
+        manager:
+          description: Id of the user's manager
+          type: string
+          nullable: true
+          example: ''
+        dateOfBirth:
+          description: the date of birth of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+        startDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        endDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        expiryDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        timezone:
+          type: string
+          nullable: true
+          example: Australia/Sydney
+        country:
+          type: string
+          nullable: true
+          example: Australia
+        state:
+          type: string
+          nullable: true
+          example: Victoria
+        role:
+          type: string
+          nullable: true
+          enum:
+            - EMPLOYEE
+            - MANAGER
+            - COMPANY_ADMIN
+          example: EMPLOYEE
+        mobile:
+          type: string
+          nullable: true
+          example: (08)83308820
+        position:
+          description: 'Current position of this user - /positions/{id}'
+          type: string
+          nullable: true
+          example: /positions/0a000000-00aa-00aa-000a-0000a0000aa0
+        location:
+          description: 'Current location of this user - /locations/{id}'
+          type: string
+          nullable: true
+          example: /locations/0a000000-00aa-00aa-000a-0000a0000aa0
+        department:
+          description: 'Current department of this user - /departments/{id}'
+          type: string
+          nullable: true
+          example: /departments/0a000000-00aa-00aa-000a-0000a0000aa0
+        legalEntity:
+          description: 'Legal Entity attached to this user - /legal-entities/{id}'
+          type: string
+          nullable: true
+          example: /legal-entities/0a000000-00aa-00aa-000a-0000a0000aa0
+        serviceStartDate:
+          description: the service start date of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+      required:
+        - id
+        - identifier
+        - firstName
+        - lastName
+        - username
+        - email
+    OnboardingUser:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        firstName:
+          description: First name of onboarding user
+          type: string
+          example: John
+        lastName:
+          description: Last name of onboarding user
+          type: string
+          example: Smith
+        preferredFirstName:
+          description: Preferred first name of onboarding user
+          type: string
+          example: John
+        preferredLastName:
+          description: Preferred last name of onboarding user
+          type: string
+          example: Sm
+        email:
+          description: 'Email of onboarding user, is this ready only'
+          type: string
+          example: john.smith@test.com
+        active:
+          readOnly: true
+          type: boolean
+          example: true
+        employeeNumber:
+          description: is this read only
+          nullable: true
+          type: string
+          example: 'null'
+        manager:
+          description: Id of the onboarding user's manager
+          type: string
+          nullable: true
+          example: ''
+        dateOfBirth:
+          description: the date of birth of this onboarding user
+          type: string
+          nullable: true
+          example: 2022/12/22
+        startDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        endDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        expiryDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        timezone:
+          type: string
+          nullable: true
+          example: Australia/Sydney
+        country:
+          type: string
+          nullable: true
+          example: Australia
+        state:
+          type: string
+          nullable: true
+          example: Victoria
+        role:
+          type: string
+          nullable: true
+          enum:
+            - EMPLOYEE
+            - MANAGER
+            - COMPANY_ADMIN
+          example: EMPLOYEE
+        mobile:
+          type: string
+          nullable: true
+          example: (08)83308820
+        customData:
+          description: Configurable Custom Fields
+          type: object
+          nullable: true
+          example:
+            customField_email: email@example.com
+            customField_drivers_license: FH4356HVN
+        position:
+          description: 'Current position of this onboarding user - /positions/{id}'
+          type: string
+          nullable: true
+          example: /positions/0a000000-00aa-00aa-000a-0000a0000aa0
+        location:
+          description: 'Current location of this onboarding user - /locations/{id}'
+          type: string
+          nullable: true
+          example: /locations/0a000000-00aa-00aa-000a-0000a0000aa0
+        department:
+          description: 'Current department of this onboarding user - /departments/{id}'
+          type: string
+          nullable: true
+          example: /departments/0a000000-00aa-00aa-000a-0000a0000aa0
+        legalEntity:
+          description: 'Legal Entity attached to this onboarding user - /legal-entities/{id}'
+          type: string
+          nullable: true
+          example: /legal-entities/0a000000-00aa-00aa-000a-0000a0000aa0
+        serviceStartDate:
+          description: the service start date of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+    OnboardingUserV2:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          profile_field_sampleText:
+            type: string
+            example: sample text
+          profile_field_sampleDate:
+            type: string
+            example: 2022/12/22
+          profile_field_sampleMenu:
+            type: string
+            example: menu option
+          profile_field_sampleTierMenu:
+            type: string
+            example: sample tier menu option
+          profile_field_sampleCheckboxList:
+            type: array
+            items:
+              type: string
+            example:
+              - value1
+              - value2
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        firstName:
+          description: First name of onboarding user
+          type: string
+          example: John
+        lastName:
+          description: Last name of onboarding user
+          type: string
+          example: Smith
+        preferredFirstName:
+          description: Preferred first name of onboarding user
+          type: string
+          example: John
+        preferredLastName:
+          description: Preferred last name of onboarding user
+          type: string
+          example: Sm
+        email:
+          description: 'Email of onboarding user, is this ready only'
+          type: string
+          example: john.smith@test.com
+        active:
+          readOnly: true
+          type: boolean
+          example: true
+        employeeNumber:
+          description: is this read only
+          nullable: true
+          type: string
+          example: 'null'
+        manager:
+          description: Id of the onboarding user's manager
+          type: string
+          nullable: true
+          example: ''
+        dateOfBirth:
+          description: the date of birth of this onboarding user
+          type: string
+          nullable: true
+          example: 2022/12/22
+        startDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        endDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        expiryDate:
+          type: string
+          nullable: true
+          example: 2022/12/22
+        timezone:
+          type: string
+          nullable: true
+          example: Australia/Sydney
+        country:
+          type: string
+          nullable: true
+          example: Australia
+        state:
+          type: string
+          nullable: true
+          example: Victoria
+        role:
+          type: string
+          nullable: true
+          enum:
+            - EMPLOYEE
+            - MANAGER
+            - COMPANY_ADMIN
+          example: EMPLOYEE
+        mobile:
+          type: string
+          nullable: true
+          example: (08)83308820
+        position:
+          description: 'Current position of this onboarding user - /positions/{id}'
+          type: string
+          nullable: true
+          example: /positions/0a000000-00aa-00aa-000a-0000a0000aa0
+        location:
+          description: 'Current location of this onboarding user - /locations/{id}'
+          type: string
+          nullable: true
+          example: /locations/0a000000-00aa-00aa-000a-0000a0000aa0
+        department:
+          description: 'Current department of this onboarding user - /departments/{id}'
+          type: string
+          nullable: true
+          example: /departments/0a000000-00aa-00aa-000a-0000a0000aa0
+        legalEntity:
+          description: 'Legal Entity attached to this onboarding user - /legal-entities/{id}'
+          type: string
+          nullable: true
+          example: /legal-entities/0a000000-00aa-00aa-000a-0000a0000aa0
+        serviceStartDate:
+          description: the service start date of this user
+          type: string
+          nullable: true
+          example: 2022/12/22
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+    PersonalContactDetails:
+      description: Personal Contact Details of a User
+      properties:
+        personalEmail:
+          type: string
+          nullable: true
+          example: john.smith@test.com
+        homePhone:
+          type: string
+          nullable: true
+          example: 0123564786
+        workPhone:
+          type: string
+          nullable: true
+          example: 0213564786
+        personalMobile:
+          type: string
+          nullable: true
+          example: 0423564786
+        addressLine1:
+          type: string
+          nullable: true
+          example: 580 George street
+        addressLine2:
+          type: string
+          nullable: true
+          example: townhall
+        suburb:
+          type: string
+          nullable: true
+          example: Sydney
+        state:
+          type: string
+          nullable: true
+          example: NSW
+          enum:
+            - ACT
+            - NSW
+            - NT
+            - TAS
+            - AAT
+            - QLD
+            - SA
+            - VIC
+            - WA
+            - AUK
+            - BOP
+            - CAN
+            - CIT
+            - GIS
+            - HKB
+            - MWT
+            - MBH
+            - NSN
+            - NTL
+            - OTA
+            - STL
+            - TKI
+            - TAS
+            - WKO
+            - WGN
+            - WTC
+            - null
+          description: |
+            Country states:
+             * Australia (AU): ACT, NSW, NT, TAS, AAT, QLD, SA, VIC, WA
+             * New Zealand (NZ): AUK, BOP, CAN, CIT, GIS, HKB, MWT, MBH, NSN, NTL, OTA, STL, TKI, TAS, WKO, WGN, WTC
+        postCode:
+          type: string
+          nullable: true
+          example: '2000'
+        country:
+          type: string
+          enum:
+            - AU
+            - NZ
+            - OS
+          nullable: true
+          example: AU
+          description: |
+            Available countries:
+             * AU - Australia
+             * NZ - New Zealand
+             * OS - Overseas
+    PersonalContactDetailsMutate:
+      allOf:
+        - $ref: '#/components/schemas/PersonalContactDetails'
+        - $ref: '#/components/schemas/CommonMutationResponse'
+        - type: object
+        - description: >-
+            Personal Contact Details response of a User which is returned from
+            mutate requests
+    UserEvents:
+      type: object
+      description: >
+        The ***output*** you get when you fire a user event. User Events are
+        asynchronous events and will change state
+      properties:
+        id:
+          type: string
+          nullable: true
+          description: >-
+            The id of the event. This is not the resource id. You will need to
+            poll this event to get its current state
+          example: null
+        entityName:
+          type: string
+          nullable: true
+          description: >
+            The entityName contains the resource name the event was linked to.
+            So the entityName for the UserEvent would be "**user**"
+          example: null
+        resourceId:
+          type: string
+          nullable: true
+          description: |
+            The id of the linked resource.
+          example: null
+        responseCode:
+          type: integer
+          example: 202
+        summary:
+          type: string
+          nullable: true
+          description: The summary of the event represents its state in a summarized view
+          example: success
+        logs:
+          type: object
+          description: >-
+            The logs contains details of what succeeded and what failed. It can
+            contain additional information not found in the summary
+          example:
+            success:
+              user:
+                - Successfully updated user.
+            failure: {}
+            successCount: '1'
+            failureCount: '0'
+    OnboardingUserEvents:
+      type: object
+      description: >
+        The ***output*** you get when you fire an onboarding user event.
+        Onboarding User Events are asynchronous events and will change state
+      properties:
+        id:
+          type: string
+          nullable: true
+          description: >-
+            The id of the event. This is not the resource id. You will need to
+            poll this event to get its current state
+          example: null
+        entityName:
+          type: string
+          nullable: true
+          description: >
+            The entityName contains the resource name the event was linked to.
+            So the entityName for the OnboardingUserEvent would be
+            "**onboarding**"
+          example: null
+        resourceId:
+          type: string
+          nullable: true
+          description: |
+            The id of the linked resource.
+          example: null
+        responseCode:
+          type: integer
+          example: 202
+        summary:
+          type: string
+          nullable: true
+          description: The summary of the event represents its state in a summarized view
+          example: success
+        logs:
+          type: object
+          description: >-
+            The logs contains details of what succeeded and what failed. It can
+            contain additional information not found in the summary
+          example:
+            success:
+              user:
+                - Successfully updated user.
+            failure: {}
+            successCount: '1'
+            failureCount: '0'
+    Department:
+      type: object
+      description: The department resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of department
+          type: string
+          example: Client Services
+        departmentId:
+          description: ID of current department
+          type: string
+          example: '2'
+        description:
+          description: Description of department
+          type: string
+          example: <p>Client Services</p>
+        path:
+          description: |
+            Visualise the client hierarchy
+            Example: /<level one ID>/<level two ID>/<level there ID>/
+          type: string
+        parent:
+          description: ID of department parent
+          type: string
+          nullable: true
+          example: null
+        deleted:
+          description: Deleted status of department
+          type: boolean
+          example: false
+    DepartmentMutate:
+      type: object
+      description: The department resource for create and update operations
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of department
+          type: string
+          example: Client Services
+        departmentId:
+          description: ID of current department
+          type: string
+          example: '2'
+        description:
+          description: Description of department
+          type: string
+          example: <p>Client Services</p>
+        parent:
+          description: ID of department parent
+          type: string
+          nullable: true
+          example: null
+    Location:
+      type: object
+      description: The location resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of location
+          type: string
+          example: Perth
+        locationId:
+          description: |
+            This is a unique identifier of location
+            This is added by user, which is different with database ID
+          type: string
+          example: Perth
+        description:
+          description: Description of a Location
+          type: string
+          example: null
+        addressLine1:
+          description: First part of the address
+          type: string
+          example: null
+        addressLine2:
+          description: Second part of the address
+          type: string
+          example: null
+        suburb:
+          description: suburb of location
+          type: string
+          example: null
+        state:
+          description: state of location
+          type: string
+          example: null
+        postcode:
+          description: postcode of location
+          type: string
+          example: null
+        country:
+          description: country of location
+          type: string
+          example: null
+        path:
+          description: |
+            Visualise the Location hierarchy
+            example: /<level one ID>/<level two ID>/<level there ID>/
+          type: string
+        parent:
+          description: ID of location parent
+          type: string
+          nullable: true
+          example: null
+        deleted:
+          description: Status of the location
+          type: boolean
+          example: false
+    LocationMutate:
+      type: object
+      description: The location resource for create and update operations
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of location
+          type: string
+          example: Perth
+        locationId:
+          description: |
+            This is a unique identifier of location
+            This is added by user, which is different with database ID
+          type: string
+          example: Perth
+        description:
+          description: Description of a Location
+          type: string
+          example: null
+        addressLine1:
+          description: First part of the address
+          type: string
+          example: null
+        addressLine2:
+          description: Second part of the address
+          type: string
+          example: null
+        suburb:
+          description: suburb of location
+          type: string
+          example: null
+        state:
+          description: state of location
+          type: string
+          example: null
+        postcode:
+          description: postcode of location
+          type: string
+          example: null
+        country:
+          description: country of location
+          type: string
+          example: null
+        parent:
+          description: ID of location parent
+          type: string
+          nullable: true
+          example: null
+    Position:
+      type: object
+      description: The position resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of position
+          type: string
+          example: Software Engineer - CYPRESS
+        positionId:
+          description: |
+            This is a unique identifier of position
+            This is added by user, which is different with database ID
+          type: string
+          example: '4783222'
+        description:
+          description: Description of position
+          type: string
+          example: .Net Software Engineer
+        qualifications:
+          description: |
+            Qualifications of position
+            This is just a text field and explains the qualifications
+          type: string
+          example: .Net Software Engineer
+        parent:
+          description: ID of position parent
+          type: string
+          nullable: true
+          example: null
+        deleted:
+          description: Status of the position
+          type: boolean
+          example: false
+    PositionMutate:
+      type: object
+      description: The position resource for create and update operations
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of position
+          type: string
+          example: Software Engineer - CYPRESS
+        positionId:
+          description: |
+            This is a unique identifier of position
+            This is added by user, which is different with database ID
+          type: string
+          example: '4783222'
+        description:
+          description: Description of position
+          type: string
+          example: .Net Software Engineer
+        qualifications:
+          description: |
+            Qualifications of position
+            This is just a text field and explains the qualifications
+          type: string
+          example: .Net Software Engineer
+        parent:
+          description: ID of position parent
+          type: string
+          nullable: true
+          example: null
+    LeaveType:
+      type: object
+      description: The leave type resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        accrualType:
+          type: string
+          example: PRO_RATA_ACCRUAL
+          enum:
+            - PRO_RATA_ACCRUAL
+            - LIMIT_BASED
+            - FREE_TEXT
+        title:
+          description: Title of leave type
+          type: string
+          example: Personal Leave
+        displayTitle:
+          description: Title that is displayed in the calendar UI
+          type: string
+          nullable: true
+          example: Personal Leave
+        description:
+          description: Description of leave type
+          type: string
+          nullable: true
+          example: '<p>Under National Employment Standards:...</p>'
+        code:
+          description: Leave type short code
+          type: string
+          nullable: true
+          example: PL
+        entitlementType:
+          type: string
+          nullable: true
+          example: ANNUAL_LEAVE
+          enum:
+            - ANNUAL_LEAVE
+            - PERSONAL_LEAVE
+            - LONG_SERVICE_LEAVE
+            - ROSTERED_DAY_OFF_TIME_IN_LIEU
+        deleted:
+          description: Deleted status of leave type
+          type: boolean
+          example: false
+    LeaveRequest:
+      type: object
+      description: The Leave Request resource
+      properties:
+        id:
+          type: string
+          description: Leave request uuid
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        user:
+          type: string
+          description: User resource
+          example: /users/0a000000-00aa-00aa-000a-0000a0000aa0
+        startDate:
+          type: string
+          format: datetime
+          description: Start date
+          example: '2020-10-22'
+        endDate:
+          type: string
+          format: datetime
+          description: End date
+          example: '2020-10-23'
+        createdDate:
+          type: string
+          format: datetime
+          description: Created date
+          example: '2020-10-01'
+        modifiedDate:
+          type: string
+          format: datetime
+          description: Created date
+          example: '2020-10-02'
+        status:
+          type: string
+          enum:
+            - PENDING
+            - REJECTED
+            - CLOSED
+            - APPROVED
+            - PROCESSING
+            - PROCESSED
+            - CANCELLED
+          description: Status
+          example: REJECTED
+        hours:
+          type: number
+          description: Total hours
+          example: 7.5
+        leaveType:
+          type: string
+          description: Leave type resource
+          example: /leave-types/0a000000-00aa-00aa-000a-0000a0000aa0
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        employmentType:
+          type: string
+          example: FULLTIME
+          enum:
+            - FULLTIME
+            - PARTTIME
+            - CASUAL
+            - CONTRACTOR
+          description: >-
+            FULLTIME - 'Full-time', PARTTIME - 'Part-time', CONTRACTOR -
+            'Contractor', CASUAL - 'Casual';
+        unitsPerWeek:
+          type: string
+          nullable: true
+          example: '5.5'
+        rate:
+          type: number
+          example: 12.34
+        rateType:
+          type: string
+          example: DAILY
+          enum:
+            - DAILY
+            - HOURLY
+          description: 'DAILY - ''Per hour'', HOURLY - ''Per day'';'
+        terminationDate:
+          type: string
+          nullable: true
+          example: 20/12/2020
+        payCycle:
+          type: string
+        bankAccounts:
+          type: object
+          properties:
+            bankAccountsAU:
+              type: array
+              description: Contains an array of AU bank accounts.
+              items:
+                $ref: '#/components/schemas/BankAccountAu'
+            bankAccountsNZ:
+              type: string
+              nullable: true
+              example: null
+            bankAccountsGB:
+              type: string
+              nullable: true
+              example: null
+        withholdingDetails:
+          type: object
+          properties:
+            withholdingDetailsAU:
+              nullable: true
+              $ref: '#/components/schemas/WithholdingDetailsAu'
+            withholdingDetailsNZ:
+              type: string
+              nullable: true
+              example: null
+            withholdingDetailsGB:
+              type: string
+              nullable: true
+              example: null
+        retirementFundAccounts:
+          type: object
+          properties:
+            retirementFundAccountsAU:
+              nullable: true
+              $ref: '#/components/schemas/RetirementFundAccountAu'
+            retirementFundAccountsNZ:
+              type: string
+              nullable: true
+              example: null
+            retirementFundAccountsGB:
+              type: string
+              nullable: true
+              example: null
+        terminationDetails:
+          type: object
+          nullable: true
+          properties:
+            terminationDate:
+              type: string
+              example: 20/12/2020
+            reason:
+              type: string
+              example: Deceased
+            notes:
+              type: string
+        emergencyContacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyContact'
+    BankAccountAu:
+      type: object
+      properties:
+        accountName:
+          type: string
+          example: John Smith
+        bsb:
+          type: number
+          nullable: true
+          example: 123-999
+        accountNumber:
+          type: number
+          nullable: true
+          example: 123456-9999999
+        isPrimary:
+          type: boolean
+          example: true
+        rateType:
+          type: string
+          example: AMOUNT
+          enum:
+            - AMOUNT
+            - PERCENTAGE
+          description: 'AMOUNT - ''Amount'', PERCENTAGE - ''Percentage;'
+        value:
+          type: number
+          example: 1000
+    TaxDetailsAu:
+      type: object
+      properties:
+        taxFileNumber:
+          type: string
+          example: 123456782
+          nullable: true
+        tfnExemptionType:
+          type: string
+          example: PENDING
+          enum:
+            - PENDING
+            - UNDER18
+            - PENSIONER
+          description: >-
+            PENDING - 'Application or Enquiry for a new/existing TFN', UNDER18 -
+            'Exemption for under 18 years of age and not earning enough to pay
+            tax', PENSIONER - 'Exemption as recipient of pension, benefit or
+            allowance';
+        paymentBasis:
+          type: string
+          example: FULLTIME
+          enum:
+            - FULLTIME
+            - PARTTIME
+            - LABORHIRE
+            - CASUAL
+            - SUPERINCOMESTREAM
+          description: >-
+            FULLTIME - 'Full-time', PARTTIME - 'Part-time', LABORHIRE - 'Labor
+            hire', CASUAL - 'Casual', SUPERINCOMESTREAM - 'Superannuation or
+            annuity income stream';
+        payGVariationtype:
+          type: string
+          example: AMOUNT
+          enum:
+            - AMOUNT
+            - PERCENTAGE
+          description: 'AMOUNT - ''Amount'', PERCENTAGE - ''Percentage'';'
+        payGVariationAmount:
+          type: number
+          example: 1000
+        additionalTax:
+          type: number
+          example: 50
+        australianResident:
+          type: boolean
+          example: true
+        workingHolidayMaker:
+          type: boolean
+          example: false
+        taxFreeThreshold:
+          type: boolean
+          example: false
+        seniorPensionerTaxOffset:
+          type: boolean
+          example: true
+        invalidValidCarerTaxOffset:
+          type: boolean
+          example: false
+        studentLoan:
+          type: boolean
+          example: false
+        declaration:
+          type: boolean
+          nullable: true
+          example: false
+        declarationDate:
+          type: string
+          nullable: true
+          example: 11/11/2011
+    WithholdingDetailsAu:
+      type: object
+      nullable: true
+      properties:
+        tfn:
+          nullable: true
+          type: string
+          example: '10000001'
+          description: >-
+            Tax File Number of an employee. Note that this could be null value
+            if employee do not provide TFN. But that will ensure reasonNoTfn
+            field will have value with relevant code.
+        reasonNoTfn:
+          nullable: true
+          type: string
+          enum:
+            - The employee didn’t quote a TFN
+            - Application or Enquiry for a new/existing TFN
+            - >-
+              Exemption for under 18 years of age and not earning enough to pay
+              tax
+            - 'Exemption as recipient of pension, benefit or allowance'
+            - The employee quoted an invalid TFN
+          description: >-
+            Specific TFN reason why employee is unable to provide TFN. Note this
+            field will be null if TFN is provided by employee.
+          example: The employee didn’t quote a TFN
+        primaryEmail:
+          type: string
+          example: john.smith@autaxation.com.au
+          description: Main contact email of the employee.
+        previousSurname:
+          nullable: true
+          type: string
+          example: Smith
+          description: >-
+            If employee have changed the name since last dealt with the ATO and
+            therefore is required to provide previous family name.
+        basisOfPayment:
+          nullable: true
+          type: string
+          enum:
+            - Full-time
+            - Part-time
+            - Labor hire
+            - Casual
+            - Superannuation or annuity income stream
+          example: Full-time
+          description: >-
+            When working out whether worker is an employee or contractor, one
+            factor to consider is how you work out what you agree to pay the
+            worker.
+        isAustralianResident:
+          type: boolean
+          example: false
+          description: Whether or not employee is Australian Resident for tax purposes.
+        isClaimTaxFreeThreshold:
+          type: boolean
+          example: false
+          description: >-
+            Amount of income employee can earn each financial year that is not
+            taxed. By claiming the threshold, employee reduces the amount of tax
+            that is withheld from the pay during the year
+        isClaimPensionerOffset:
+          type: boolean
+          example: true
+          description: >-
+            Tax offset for low and middle income earners to reduce tax payable
+            to zero, but it is not a bonus payment. The amount of available
+            offset depends on individual circumstances.
+        isClaimZoneOffset:
+          type: boolean
+          example: false
+          description: >-
+            Employee may be eligible for a zone tax offset if live or work in
+            certain remote or isolated areas of Australia.
+        isWorkingHolidayMaker:
+          type: boolean
+          example: true
+          description: >-
+            Applies to payments to individuals - including backpackers - who are
+            working in Australia and hold visa(subclass 417 or subclass 462 or
+            Bridging Visa)
+        visaCountry:
+          type: string
+          example: BR
+          description: >-
+            ISO 3166-1 alpha-2 codes of country where employee is originally
+            from.
+        hasStlr:
+          type: boolean
+          example: false
+          description: >-
+            If Australian Government lent employee money under HECS-HELP,
+            FEE-HELP, OS-HELP, VET FEE-HELP, VET Student loans prior to 1 July
+            2019 or SA-HELP or if employee have a debt from the previous Higher
+            Education Contribution Scheme (HECS)
+        isSeasonalWorker:
+          type: boolean
+          nullable: true
+          example: false
+          description: >-
+            If employee is seasonal workers who withheld tax at a flat rate of
+            15% on all earnings. Returns null in case integration type is not
+            Payroll
+        isInformationCorrect:
+          type: boolean
+          example: true
+          description: >-
+            Declaring employee has answered all the questions truthfully and
+            correctly.
+        declarationDate:
+          type: string
+          example: '2021-12-25'
+          description: >-
+            Date when employee declare all the questions in the TFN form were
+            answered truthfully and correctly. Dates are strings in ISO 8601
+            format YYYY-MM-DD
+        declarationDateTimezone:
+          type: string
+          example: Pacific/Auckland
+          description: >-
+            Timezone used when employee was declaring all the information
+            provided in Taxation form is correct.
+    RetirementFundAccountAu:
+      type: object
+      properties:
+        superFundName:
+          type: string
+          example: My SuperFund Name
+        superFundType:
+          type: string
+          enum:
+            - Employee nominated super fund
+            - Employer nominated super fund
+            - Retirement savings account (RSA)
+            - Self-managed super fund (SMSF)
+          example: Self-managed super fund (SMSF)
+        abn:
+          type: string
+          example: '12345678'
+          nullable: true
+        membershipNumber:
+          type: string
+          example: '12345678'
+          nullable: true
+        accountName:
+          type: string
+          example: My Account Name
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)'
+            type.
+        usi:
+          type: string
+          example: STA0100AU
+          nullable: true
+          description: >-
+            This field is not supported by 'Self-managed super fund (SMSF)'
+            type.
+        bsb:
+          type: string
+          example: 082902
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)'
+            type.
+        accountNumber:
+          type: string
+          example: '12345678'
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)'
+            type.
+        esa:
+          type: string
+          example: Lorem Ipsum
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)'
+            type.
+        addressLine1:
+          type: string
+          example: First line address
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        addressLine2:
+          type: string
+          example: Second line address
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        suburb:
+          type: string
+          example: Essen
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        state:
+          type: string
+          enum:
+            - Australian Capital Territory
+            - New South Wales
+            - Northern Territory
+            - Tasmania
+            - Australian Antarctic Territory
+            - Queensland
+            - South Australia
+            - Victoria
+            - Western Australia
+            - Other/Overseas
+            - Auckland
+            - Bay of Plenty
+            - Canterbury
+            - Chatham Islands
+            - Gisborne
+            - Hawke's Bay
+            - Manawatu-Wanganui
+            - Marlborough
+            - Nelson
+            - Northland
+            - Otago
+            - Southland
+            - Taranaki
+            - Tasman
+            - Waikato
+            - Wellington
+            - West Coast
+          example: New South Wales
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        postcode:
+          type: string
+          example: '49632'
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        country:
+          type: string
+          enum:
+            - Australia
+            - New Zealand
+          example: Australia
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+          nullable: true
+        phone:
+          type: string
+          example: +38 (066) 373-37-02
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+        email:
+          type: string
+          example: mail@example.com
+          nullable: true
+          description: >-
+            This field is supported only by 'Self-managed super fund (SMSF)' and
+            'Retirement savings account (RSA)' types.
+    SuperannuationDetails:
+      type: object
+      properties:
+        superFundType:
+          type: string
+          nullable: true
+          example: REGULATED
+          enum:
+            - REGULATED
+            - RSA
+            - SMSF
+          description: >-
+            REGULATED - 'Employee/employer nominated super fund', RSA -
+            'Retirement savings account (RSA)', SMSF - 'Self-managed super fund
+            (SMSF)';
+        name:
+          type: string
+          example: Superannuation Guarantee
+        abn:
+          type: string
+          example: '50724610999'
+        usi:
+          type: string
+          example: 3AW88YH9U5
+        accountName:
+          type: string
+          example: John Smith
+        bsb:
+          type: number
+          nullable: true
+          example: 123-999
+        accountNumber:
+          type: number
+          nullable: true
+          example: 123456-9999999
+        membershipNumber:
+          type: string
+          example: 3abf52aee1
+    PayrollCycle:
+      type: object
+      description: The Payroll Cycle resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        title:
+          description: Title of Payroll Cycle
+          type: string
+          example: Weekly
+        description:
+          description: Description of Payroll Cycle
+          type: string
+          nullable: true
+          example: My custom payroll cycle description
+        startDate:
+          type: string
+          nullable: true
+          example: 27/04/2017
+        type:
+          description: >-
+            Type of Payroll Cycle; WEEKLY - 'Weekly', FORTNIGHTLY -
+            'Fortnightly', FOURWEEKLY - '4 Weekly', MONTHLY - 'Monthly',
+            BIMONTHLY - 'Bi-monthly', QUARTERLY - 'Quarterly';
+          type: string
+          nullable: true
+          example: WEEKLY
+          enum:
+            - WEEKLY
+            - FORTNIGHTLY
+            - FOURWEEKLY
+            - MONTHLY
+            - BIMONTHLY
+            - QUARTERLY
+        default:
+          description: Determine if this payroll cycle should be used by default
+          type: boolean
+          example: false
+        weeksPerAnnum:
+          description: >-
+            Number of weeks per Annum. It will impact Salary displayed on
+            Employee Profile (ESS), Payment Details, Leave Balances/Calculations
+            on Employees Entitlement and Forecasting
+          type: number
+          example: 52
+        jurisdiction:
+          type: string
+          example: AU
+    Metadata:
+      anyOf:
+        - properties:
+            key:
+              type: string
+              example: enabled
+            value:
+              type: integer
+              example: 0
+              description: 'Enable or Disable this field. Where 0 - Enabled, 1 - Disabled.'
+        - properties:
+            key:
+              type: string
+              example: visible
+            value:
+              type: integer
+              example: 1
+              description: >-
+                Who can see this field. Where 0 - Everybody, 1 - Nobody, 2 -
+                Company Admin Only, 3 - Manager and Company Admin.
+        - properties:
+            key:
+              type: string
+              example: editable
+            value:
+              type: integer
+              example: 1
+              description: >-
+                Who can make changes to this field. Where 0 - Everybody, 1 -
+                Nobody, 2 - Company Admin Only, 3 - Manager and Company Admin.
+        - properties:
+            key:
+              type: string
+              example: profile
+            value:
+              type: integer
+              example: 0
+              description: >-
+                Who will see this field displayed on users Profile page. Where 0
+                - Everybody, 1 - Nobody, 2 - Company Admin Only, 3 - Manager and
+                Company Admin.
+        - properties:
+            key:
+              type: string
+              example: reports
+            value:
+              type: integer
+              example: 0
+              description: Reports visible.
+        - properties:
+            key:
+              type: string
+              example: selfRegistration
+            value:
+              type: integer
+              example: 1
+              description: >-
+                Field appears on the Self Registration page. Where 0 - No, 1 -
+                Yes.
+        - properties:
+            key:
+              type: string
+              example: required
+            value:
+              type: integer
+              example: 1
+              description: 'Required or optional field. Where 0 - Optional, 1 - Required.'
+        - properties:
+            key:
+              type: string
+              example: forceUnique
+            value:
+              type: integer
+              example: 1
+              description: 'Unique field value. Where 0 - No, 1 - Yes.'
+    PropertyMetadata:
+      properties:
+        property:
+          type: string
+        metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metadata'
+    CommonMutationResponse:
+      type: object
+      description: The common ***output*** for mutation requests.
+      properties:
+        responseCode:
+          type: integer
+          example: 202
+        summary:
+          type: string
+          nullable: true
+          description: State of operation in a summarized view
+          example: success
+        logs:
+          type: object
+          description: >-
+            The logs contains details of what succeeded and what failed. It can
+            contain additional information not found in the summary
+          example:
+            success:
+              user:
+                - Successfully updated user.
+            failure: {}
+            successCount: '1'
+            failureCount: '0'
+    MutationResponse:
+      allOf:
+        - $ref: '#/components/schemas/CommonMutationResponse'
+        - type: object
+        - description: >-
+            This is an abstract class. Responses may extend this model to
+            contain additional information
+          properties:
+            id:
+              type: string
+              nullable: true
+              example: 0a000000-00aa-00aa-000a-0000a0000aa0
+    LegalEntity:
+      type: object
+      description: The legal entity resource
+      properties:
+        id:
+          readOnly: true
+          type: string
+          example: 0a000000-00aa-00aa-000a-0000a0000aa0
+        abn:
+          type: string
+          example: '50724610999'
+        businessName:
+          type: string
+          example: Business Name
+        tradingName:
+          type: string
+          nullable: true
+          example: Trading Name
+        branchNumber:
+          type: string
+          nullable: true
+          example: '01'
+        contactName:
+          type: string
+          example: Contact Name
+        phone:
+          type: string
+          example: '1300012345'
+        fax:
+          type: string
+          nullable: true
+          example: '1300012345'
+        email:
+          type: string
+          example: test@test.org.au
+        default:
+          type: boolean
+          example: true
+        active:
+          type: boolean
+          example: true
+        jurisdiction:
+          type: string
+          example: AU
+        address:
+          type: object
+          description: Object with address data
+          required:
+            - addressLine1
+            - suburb
+            - state
+            - postcode
+            - country
+          properties:
+            addressLine1:
+              type: string
+              nullable: true
+            addressLine2:
+              type: string
+              nullable: true
+            suburb:
+              type: string
+              nullable: true
+            state:
+              type: string
+              nullable: true
+            postcode:
+              type: string
+              nullable: true
+            country:
+              type: string
+              nullable: true
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          example: 'https://tools.ietf.org/html/rfc2616#section-10'
+        title:
+          type: string
+          example: An error occurred
+        detail:
+          type: string
+          example: Not Found
+      required:
+        - type
+        - title
+        - detail
+    ErrorMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User is not authorized to access this resource with an explicit deny
+      required:
+        - message
+    OauthTokenErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid Request
+        error_description:
+          type: string
+          example: Request attribute 'grant_type' field is missing.
+      required:
+        - error
+        - error_description
+    ErrorServerInternal:
+      type: object
+      properties:
+        type:
+          type: string
+          example: 'https://tools.ietf.org/html/rfc2616#section-10'
+        title:
+          type: string
+          example: Internal Server Error
+        detail:
+          type: string
+          example: The server encountered an unexpected condition
+      required:
+        - type
+        - title
+        - detail
+    Forbidden:
+      type: object
+      properties:
+        type:
+          type: string
+          example: 'https://tools.ietf.org/html/rfc2616#section-10'
+        title:
+          type: string
+          example: An error occurred
+        detail:
+          type: string
+          example: Forbidden
+      required:
+        - type
+        - title
+        - detail
+    UnprocessableEntity:
+      type: object
+      properties:
+        responseCode:
+          type: integer
+          example: 422
+        summary:
+          type: string
+          example: invalid
+        logs:
+          type: object
+          example:
+            success: {}
+            failure: {}
+            successCount: '0'
+            failureCount: '0'
+      required:
+        - responseCode
+        - summary
+        - logs
+    UnprocessableEntityExtended:
+      allOf:
+        - $ref: '#/components/schemas/UnprocessableEntity'
+        - type: object
+          properties:
+            id:
+              type: string
+              nullable: true
+              example: null
+            entityName:
+              type: string
+              nullable: true
+              example: null
+            entityPayload:
+              type: string
+              nullable: true
+              example: null
+            resourceId:
+              type: string
+              nullable: true
+              example: null
+    UserCreationTemplate:
+      type: object
+      properties:
+        $schema:
+          type: string
+          example: 'http://json-schema.org/draft-04/schema#'
+        required:
+          type: array
+          items:
+            type: string
+          example:
+            - firstName
+            - lastName
+            - username
+            - email
+        properties:
+          type: object
+          properties:
+            firstName:
+              required: true
+              $ref: '#/components/schemas/Field'
+            lastName:
+              required: true
+              $ref: '#/components/schemas/Field'
+            username:
+              required: true
+              $ref: '#/components/schemas/Field'
+            email:
+              required: true
+              $ref: '#/components/schemas/Field'
+          additionalProperties:
+            $ref: '#/components/schemas/Field'
+        additionalProperties:
+          type: boolean
+          example: false
+    OnboardingUserCreationTemplate:
+      type: object
+      properties:
+        $schema:
+          type: string
+          example: 'http://json-schema.org/draft-04/schema#'
+        required:
+          type: array
+          items:
+            type: string
+          example:
+            - firstName
+            - lastName
+            - email
+        properties:
+          type: object
+          properties:
+            firstName:
+              required: true
+              $ref: '#/components/schemas/Field'
+            lastName:
+              required: true
+              $ref: '#/components/schemas/Field'
+            email:
+              required: true
+              $ref: '#/components/schemas/Field'
+          additionalProperties:
+            $ref: '#/components/schemas/Field'
+        additionalProperties:
+          type: boolean
+          example: false
+    Field:
+      type: object
+      properties:
+        pattern:
+          type: string
+          example: '^[A-Z]{2,10}$'
+        type:
+          type: string
+          example: string
+        description:
+          type: string
+          example: user field
+        maxLength:
+          type: integer
+          example: 255
+        minLength:
+          type: integer
+          example: 1
+    EmergencyContact:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        relationship:
+          type: string
+          example: Father
+        homePhone:
+          type: string
+        workPhone:
+          type: string
+        mobile:
+          type: string
+        email:
+          type: string
+          format: email
+    CandidateQuery:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '10'
+        firstName:
+          type: string
+          example: John
+          minLength: 3
+          maxLength: 255
+        lastName:
+          type: string
+          example: Doe
+          minLength: 3
+          maxLength: 255
+        email:
+          type: string
+          example: john.doe@noreply.com
+          format: email
+          maxLength: 60
+        addressLine1:
+          type: string
+          maxLength: 255
+        addressLine2:
+          type: string
+          maxLength: 255
+        suburb:
+          type: string
+          maxLength: 255
+        state:
+          type: string
+          maxLength: 255
+        postcode:
+          type: string
+          maxLength: 30
+        country:
+          type: string
+          maxLength: 30
+        homePhone:
+          type: string
+          maxLength: 30
+        mobile:
+          type: string
+          maxLength: 30
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/EducationQuery'
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageQuery'
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExperienceQuery'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillQuery'
+    EducationQuery:
+      type: object
+      properties:
+        id:
+          type: string
+        school:
+          type: string
+        degree:
+          type: string
+        grade:
+          type: string
+        fieldOfStudy:
+          type: string
+        activities:
+          type: string
+        description:
+          type: string
+        startDateYear:
+          type: integer
+        endDateYear:
+          type: integer
+    LanguageQuery:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        ratingSpeaking:
+          type: integer
+        ratingReading:
+          type: integer
+        ratingWriting:
+          type: integer
+    ExperienceQuery:
+      type: object
+      properties:
+        id:
+          type: string
+        positionTitle:
+          type: string
+        companyName:
+          type: string
+        companyAddress:
+          type: string
+        startDateMonth:
+          type: integer
+        startDateYear:
+          type: integer
+        endDateMonth:
+          type: integer
+        endDateYear:
+          type: integer
+        isCurrent:
+          type: boolean
+    SkillQuery:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+    ErrorGetResponse:
+      type: object
+      properties:
+        type:
+          type: integer
+        error:
+          type: string
+        status:
+          type: string
+        message:
+          type: string
+        instance:
+          type: string
+    ErrorsGetResponse:
+      type: object
+      properties:
+        type:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        message:
+          type: string
+        instance:
+          type: string
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        itemsPerPage:
+          type: integer
+        totalItems:
+          type: integer
+    MetadataListQuery:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    CandidateListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CandidateQuery'
+        metadata:
+          $ref: '#/components/schemas/MetadataListQuery'
+    DepartmentTemplateEmployeeLed:
+      type: object
+      description: Department Schema
+      properties:
+        $schema:
+          type: string
+          example: 'http://json-schema.org/draft-04/schema#'
+        description:
+          type: string
+          example: Department Schema
+        required:
+          type: array
+          items:
+            type: string
+          example:
+            - departmentId
+            - title
+        properties:
+          type: object
+          properties:
+            id:
+              required: false
+              $ref: '#/components/schemas/Field'
+            departmentId:
+              required: true
+              $ref: '#/components/schemas/Field'
+            title:
+              required: true
+              $ref: '#/components/schemas/Field'
+            description:
+              required: false
+              $ref: '#/components/schemas/Field'
+            parentId:
+              required: false
+              $ref: '#/components/schemas/Field'
+        additionalProperties:
+          type: boolean
+          example: false
+    LocationTemplateEmployeeLed:
+      type: object
+      description: Location Schema
+      properties:
+        $schema:
+          type: string
+          example: 'http://json-schema.org/draft-04/schema#'
+        description:
+          type: string
+          example: Location Schema
+        required:
+          type: array
+          items:
+            type: string
+          example:
+            - locationId
+            - title
+        properties:
+          type: object
+          properties:
+            id:
+              required: false
+              $ref: '#/components/schemas/Field'
+            locationId:
+              required: true
+              $ref: '#/components/schemas/Field'
+            title:
+              required: true
+              $ref: '#/components/schemas/Field'
+            description:
+              required: false
+              $ref: '#/components/schemas/Field'
+            addressLine1:
+              required: false
+              $ref: '#/components/schemas/Field'
+            addressLine2:
+              required: false
+              $ref: '#/components/schemas/Field'
+            suburb:
+              type: string
+              required: false
+              $ref: '#/components/schemas/Field'
+            state:
+              required: false
+              $ref: '#/componentsschemas/Field'
+            country:
+              required: false
+              $ref: '#/components/schemas/Field'
+            parentId:
+              required: false
+              $ref: '#/components/schemas/Field'
+        additionalProperties:
+          type: boolean
+          example: false
+    PositionTemplateEmployeeLed:
+      type: object
+      description: Position Schema
+      properties:
+        $schema:
+          type: string
+          example: 'http://json-schema.org/draft-04/schema#'
+        description:
+          type: string
+          example: Position Schema
+        required:
+          type: array
+          items:
+            type: string
+          example:
+            - positionId
+            - title
+        properties:
+          type: object
+          properties:
+            id:
+              required: false
+              $ref: '#/components/schemas/Field'
+            positionId:
+              required: true
+              $ref: '#/components/schemas/Field'
+            title:
+              required: true
+              $ref: '#/components/schemas/Field'
+            description:
+              required: false
+              $ref: '#/components/schemas/Field'
+            qualifications:
+              required: false
+              $ref: '#/components/schemas/Field'
+            parentId:
+              required: false
+              $ref: '#/components/schemas/Field'
+        additionalProperties:
+          type: boolean
+          example: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
