@@ -1,0 +1,2541 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Definitiv API - Users",
+        "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://elmo-demo-05.definitiv.com.au",
+      "description": "Current Environment"
+    }
+  ],
+  "paths": {
+    "/api/account/forgot-password": {
+      "post": {
+        "tags": [
+          "User - Authentication"
+        ],
+        "summary": "Engages the password reset process.",
+        "description": "Engages the password reset process.",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Controllers.AccountForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/instance/config": {
+      "get": {
+        "tags": [
+          "User - Authentication"
+        ],
+        "summary": "Get Instance Config",
+        "description": "Gets instance config.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Contracts.Auth.InstanceConfigDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth-options": {
+      "get": {
+        "tags": [
+          "User - Authentication"
+        ],
+        "summary": "Get Authentication Options",
+        "description": "Gets authentication options.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Contracts.Auth.InstanceConfigDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account/api-key": {
+      "get": {
+        "tags": [
+          "User - Authentication"
+        ],
+        "summary": "Get API Key",
+        "description": "Gets API Key.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserApiKeyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/announcements": {
+      "get": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Get All Announcements",
+        "description": "Gets a list of all announcements of the organization",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Create Announcement",
+        "description": "Creates an announcement for the organization",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/announcements/{announcementId}": {
+      "put": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Update Announcement",
+        "description": "Updates an announcement",
+        "parameters": [
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Delete Announcement",
+        "description": "Deletes an announcement",
+        "parameters": [
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/announcement-attachments": {
+      "post": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Attach File",
+        "description": "Attaches a list of files to the announcement",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Contracts.Common.Attachment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/announcements/{announcementId}/attachments/{fileId}": {
+      "delete": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Remove Attachment",
+        "description": "Removes an attachment from the announcement",
+        "parameters": [
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/permissions": {
+      "get": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Get Permissions",
+        "description": "Gets a list of permissions.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.PermissionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/permission-levels": {
+      "get": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Get Permission Levels",
+        "description": "Gets an array of possible permission levels.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/roles": {
+      "get": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Get Roles",
+        "description": "Gets a list of roles.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Create Role",
+        "description": "Creates a new role.",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/roles/{authRoleId}": {
+      "get": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Get Role",
+        "description": "Gets details for the identified role.",
+        "parameters": [
+          {
+            "name": "authRoleId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Update Role",
+        "description": "Updates the identified role.",
+        "parameters": [
+          {
+            "name": "authRoleId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRoleDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Archive Role",
+        "description": "Archives the identified role.",
+        "parameters": [
+          {
+            "name": "authRoleId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/auth/roles/unarchive/{authRoleId}": {
+      "put": {
+        "tags": [
+          "User - Authentication Roles"
+        ],
+        "summary": "Restore Archived Role",
+        "description": "Restores the identified, archived role.",
+        "parameters": [
+          {
+            "name": "authRoleId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/devices": {
+      "get": {
+        "tags": [
+          "User Devices"
+        ],
+        "summary": "Get Registered Devices",
+        "description": "Gets a list of devices registered to the User",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDeviceDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "User Devices"
+        ],
+        "summary": "Register Device to User",
+        "description": "Update or crate a UserDevice. If no UserDeviceId is supplied it will try find \r\nan existing device that matches the UserId and DeviceUniqueIdentifier",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDeviceDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "User Devices"
+        ],
+        "summary": "Get Registered Devices",
+        "description": "Delete a device registration from a user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "userDeviceId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.DeleteResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/devices/{userDeviceId}": {
+      "get": {
+        "tags": [
+          "User Devices"
+        ],
+        "summary": "Get Registered Devices",
+        "description": "Gets a device registered to the User",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "userDeviceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDeviceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/devices/notifications": {
+      "delete": {
+        "tags": [
+          "User Devices"
+        ],
+        "summary": "Delete Notification Token",
+        "description": "Removes a notification token from all registered devices",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "notificationToken",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.DeleteResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user-view-preferences/{viewName}": {
+      "get": {
+        "tags": [
+          "User View Preferences"
+        ],
+        "summary": "Get User View Preference",
+        "description": "Gets the user's view preference for a specific view",
+        "parameters": [
+          {
+            "name": "viewName",
+            "in": "path",
+            "description": "The name of the view",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The name of the view",
+              "nullable": true
+            }
+          },
+          {
+            "name": "defaultValue",
+            "in": "query",
+            "description": "The default value to return if no preference is set",
+            "schema": {
+              "type": "boolean",
+              "description": "The default value to return if no preference is set",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Controllers.UserViewPreferenceDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "User View Preferences"
+        ],
+        "summary": "Set User View Preference",
+        "description": "Sets the user's view preference for a specific view",
+        "parameters": [
+          {
+            "name": "viewName",
+            "in": "path",
+            "description": "The name of the view",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The name of the view",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The preference value to set",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Controllers.SetUserViewPreferenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/company/{orgId}/user-options": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User Options",
+        "description": "Gets user options for selection",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<UserId>"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get All Users",
+        "description": "Gets a list of all users",
+        "parameters": [
+          {
+            "name": "showAssociatedEmployees",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create User",
+        "description": "Creates a new user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/create-user-from-external-service": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create or update a user",
+        "description": "Create or update a user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employees/{employeeId}/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User By Employee",
+        "description": "Gets a user by Employee Id",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/roles": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User Roles",
+        "description": "Updates a list of roles of the user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserRoleDto"
+                },
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/password": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reset User Password",
+        "description": "Resets a user password to provided password",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UpdatePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/reset-api-key": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reset Api Key",
+        "description": "Resets a user API key of the user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserApiKeyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/unlock": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Unlock User",
+        "description": "Unlocks a user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/forgotten-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Reset Password To Auto-generated",
+        "description": "Resets a user password to auto-generated password and sends an email with the new password",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/bulk/forgotten-2fa": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Bulk Reset Two Factor Authentication",
+        "description": "Sends two factor authentication reset emails to the list of users requiring 2FA",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Controllers.BulkForgottenTwoFactorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/bulk/forgotten-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Bulk Reset Passwords",
+        "description": "Resets passwords for the list of users to the auto-generated passwords and sends an email with the new password to the users",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.BulkForgottenPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/bulk/resend-invite": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Bulk Resend Invites",
+        "description": "Sends invitation notification to the list of users",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.BulkResendInvitesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/users/{userId}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User",
+        "description": "Updates a user details",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDetailsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Domain.IdentityAccess.User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/organizations": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User Organisation Associations",
+        "description": "Gets a list of organisations associated to the user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserOrganizationAssociation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/employee-associations": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create New Employee Association",
+        "description": "Creates a new employee association for the user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserOrganizationAssociation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employees/{employeeId}/unlink-employee-association": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Unlink Employee Association",
+        "description": "Unlinks an employee association of the user",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user-settings": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get All User Settings",
+        "description": "Gets all settings of the user",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": { }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Definitiv.Api.Controllers.AccountForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Auth.InstanceConfigDto": {
+        "type": "object",
+        "properties": {
+          "ssoEnabled": {
+            "type": "boolean"
+          },
+          "isAutoRedirectEnabled": {
+            "type": "boolean"
+          },
+          "persistentLoginEnabled": {
+            "type": "boolean"
+          },
+          "userNameLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "financialYearStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "financialYearEndDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UserApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "apiKey": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.AnnouncementAttachment": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "filename": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Data.Organization.AnnouncementSubscriptionMode": {
+        "enum": [
+          "OnceOff",
+          "Ongoing"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Data.Organization.AnnouncementApplicableMode": {
+        "enum": [
+          "ApplicableForAllEmployees",
+          "ApplicableForSpecificEmployees"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Data.Organization.AnnouncementAcknowledgementType": {
+        "enum": [
+          "Standard",
+          "Acknowledge",
+          "Response"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Contracts.CustomFields.CustomFieldTargetEntity": {
+        "enum": [
+          "Employee",
+          "Timesheet",
+          "Leave",
+          "EmployeeDocument",
+          "EmployeeQualification",
+          "OrganizationDocument",
+          "PayItem",
+          "Announcement",
+          "Asset",
+          "Organization"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Contracts.CustomFields.CustomFieldDataType": {
+        "enum": [
+          "Integer",
+          "Decimal",
+          "Boolean",
+          "String",
+          "Date",
+          "DropDown",
+          "MultiSelect"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Contracts.TimeAttendance.CustomFieldTimePeriodMode": {
+        "enum": [
+          "Duration",
+          "StartEndTimes",
+          "AllDay",
+          "UseTimesheet"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Contracts.CustomFields.CustomFieldDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "customFieldId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "targetEntity": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.CustomFields.CustomFieldTargetEntity"
+          },
+          "dataType": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.CustomFields.CustomFieldDataType"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "global": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateDriven": {
+            "type": "boolean"
+          },
+          "timeBased": {
+            "type": "boolean"
+          },
+          "displayOnTimesheetSummary": {
+            "type": "boolean"
+          },
+          "preventMultipleEntries": {
+            "type": "boolean"
+          },
+          "timePeriodMode": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.TimeAttendance.CustomFieldTimePeriodMode"
+          },
+          "inheritTimesheetPeriod": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.AnnouncementDto": {
+        "required": [
+          "organizationId"
+        ],
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "announcementId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentTypeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.AnnouncementAttachment"
+            },
+            "nullable": true
+          },
+          "notifyUser": {
+            "type": "boolean"
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/Definitiv.Data.Organization.AnnouncementSubscriptionMode"
+          },
+          "applicableRoles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "announcementApplicableMode": {
+            "$ref": "#/components/schemas/Definitiv.Data.Organization.AnnouncementApplicableMode"
+          },
+          "applicableDepartments": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "applicableLocations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "applicableProjects": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "applicableEmployees": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "acknowledgementType": {
+            "$ref": "#/components/schemas/Definitiv.Data.Organization.AnnouncementAcknowledgementType"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acknowledgementLockoutPeriodSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseCustomFieldDefinitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.CustomFields.CustomFieldDefinitionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Attachment": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "filename": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Auth.PermissionAction": {
+        "enum": [
+          "None",
+          "ManageUsers",
+          "ManageUserRoles",
+          "ManageRolePermissions",
+          "ChangeUserPassword",
+          "ManageApiKeys",
+          "ManageOrganizationDetails",
+          "ManageProjects",
+          "ManageRoles",
+          "ManageLocations",
+          "ManageDepartments",
+          "ManageTasks",
+          "AddOrganizations",
+          "ManageOrganizationSettings",
+          "ManageEmploymentTypes",
+          "ManageShiftTypes",
+          "ManageAccrualTypes",
+          "ManagePayCalendars",
+          "ManageComplianceRecords",
+          "ManageTerminationReasons",
+          "ManageUsualPlaceOfResidence",
+          "ManagePublicHolidays",
+          "ManagePayPolicies",
+          "ManageLeavePolicies",
+          "ManageAwardPolicies",
+          "ManageWorkSchedules",
+          "ManagePayItems",
+          "ExportData",
+          "ImportData",
+          "ManageBsbData",
+          "ViewTeams",
+          "EditTeams",
+          "ManageBranding",
+          "ManageApplicationSettings",
+          "AddEmployees",
+          "ManageTimeClockDevices",
+          "ProvisionTimeClockDevices",
+          "ManageUnitsOfMeasure",
+          "ManageHireReasons",
+          "ManageAnnouncements",
+          "ManageSuperannuationBatchPayments",
+          "ManageTerminationTypes",
+          "ManageProvisionPolicies",
+          "ManageThirdPartyPayments",
+          "ManageUpdateAccrualLiabilities",
+          "ManageCustomFields",
+          "ManageEndOfYearProcesses",
+          "InteractWithSBR",
+          "ManageSingleSignOnConfiguration",
+          "ManageDocumentTypes",
+          "ViewOrganizationDocuments",
+          "EditOrganizationDocuments",
+          "AuditStpLodgements",
+          "ManageAccrualCashOuts",
+          "ManagePayRuns",
+          "PublishPayRuns",
+          "ViewEmployee",
+          "EditEmployeeContactProfilePic",
+          "EditEmployeeContactEmail",
+          "EditEmployeeContactPhone",
+          "EditEmployeeContactAddress",
+          "EditEmployeeLegalName",
+          "EditEmployeePreferredName",
+          "EditEmployeeDateOfBirth",
+          "EditEmployeeGender",
+          "EditEmployeeNumber",
+          "ViewEmployeeEmploymentRecord",
+          "ManageEmployeeEmploymentRecord",
+          "ViewEmployeePayCalendar",
+          "EditEmployeePayCalendar",
+          "ViewEmployeeBanking",
+          "EditEmployeeBanking",
+          "ViewEmployeeTax",
+          "EditEmployeeTax",
+          "ViewEmployeeSuper",
+          "EditEmployeeSuper",
+          "ViewEmployeePayPolicy",
+          "EditEmployeePayPolicy",
+          "ViewEmployeeAdditionsDeductions",
+          "EditEmployeeAdditionsDeductions",
+          "ViewEmployeeProjects",
+          "EditEmployeeProjects",
+          "ViewEmployeeRoles",
+          "EditEmployeeRoles",
+          "ViewEmployeeLocations",
+          "EditEmployeeLocations",
+          "ViewEmployeeDepartments",
+          "EditEmployeeDepartments",
+          "ViewEmployeeWorkSchedule",
+          "EditEmployeeWorkSchedule",
+          "ViewEmployeeEmergencyContacts",
+          "EditEmployeeEmergencyContacts",
+          "ViewEmployeeQualifications",
+          "EditEmployeeQualifications",
+          "ViewEmployeeLeaveBalances",
+          "ViewEmployeePaySlips",
+          "ViewEmployeeLeavePolicy",
+          "EditEmployeeLeavePolicy",
+          "ViewEmployeeAccrualEntitlements",
+          "EditEmployeeAccrualEntitlements",
+          "ViewEmployeeAvailability",
+          "EditEmployeeAvailability",
+          "ViewEmployeeCustomFields",
+          "EditEmployeeCustomFields",
+          "ViewEmployeeDocuments",
+          "EditEmployeeDocuments",
+          "ViewTeamCompliance",
+          "ViewVarianceReport",
+          "ViewEmployeeLeaveLoading",
+          "EditEmployeeLeaveLoading",
+          "ViewEmployeeWorkRestrictions",
+          "EditEmployeeWorkRestrictions",
+          "ManageWorkRestrictions",
+          "ViewEmployeePlantEquipment",
+          "EditEmployeePlantEquipment",
+          "ManagePlantEquipment",
+          "ViewEmployeeOnboarding",
+          "CreateAndEditEmployeeOnboarding",
+          "ManageOnboardingSettings",
+          "SubmitTimesheet",
+          "DeleteTimesheet",
+          "ViewTimesheetCustomFields",
+          "UpdateLockedTimesheet",
+          "AddAttachmentToTimesheet",
+          "SubmitLeave",
+          "UpdateLockedLeave",
+          "WithdrawPaidLeave",
+          "ViewEmployeeCalendar",
+          "EditV3RosterVisibilitySettings",
+          "ManageV3RosterOptions",
+          "ManageV3RosterEntries",
+          "ManageLegacyRosters",
+          "ManageEmployeePendingRosters",
+          "ManageRosterTemplates",
+          "FillRosterVacancies",
+          "ViewRosterCosts",
+          "ManageApprovals",
+          "ManageAttachments",
+          "SubmitTimeClockEvents",
+          "BypassIBeaconCheck",
+          "OfflinePersonalTimeClock",
+          "AddAttachmentToPersonalTimeClock",
+          "ViewAllEmployeeReporting",
+          "ViewAllPayrollReporting",
+          "ViewAllLeaveReporting",
+          "ViewAllAccrualReporting",
+          "ViewAllTimeAttendanceReporting",
+          "ViewAllTimeClockReporting",
+          "ViewAllCompanyReporting",
+          "ViewAllPdfReporting",
+          "ViewCustomReporting",
+          "ManageWebhookSubscriptions",
+          "ViewEmployeeListingReport",
+          "ViewEmployeeRoleAssignmentsReport",
+          "ViewEmployeeComplianceRecordsReport",
+          "ViewEmployeeTaxDeclarationsReport",
+          "ViewAdditionsAndDeductionsReport",
+          "ViewEmployeePayPoliciesReport",
+          "ViewSuperannuationReport",
+          "ViewEmployeeEmergencyContactsReport",
+          "ViewEmployeeDocumentsReport",
+          "ViewEmployeeWorkRestrictionPoliciesReport",
+          "ViewEmployeeComplianceRequirementsReport",
+          "ViewPayRunsReport",
+          "ViewPayrollAnalysisReport",
+          "ViewGrossToNetReport",
+          "ViewProvisionPolicyOnCostsReport",
+          "ViewStpYtdsReport",
+          "ViewStpPayRunsReport",
+          "ViewIndividualPaymentSummariesReport",
+          "ViewIndividualPaymentSummariesDetailReport",
+          "ViewEtpSummariesReport",
+          "ViewCostSplittingsReport",
+          "ViewEmployeeAssetsReport",
+          "ViewLeaveApplicationsReport",
+          "ViewLeaveApprovalsReport",
+          "ViewLeaveBalancesReport",
+          "ViewAccrualLiabilityReport",
+          "ViewAccrualManagementReport",
+          "ViewAccrualMovementsReport",
+          "ViewAccrualBalancesReport",
+          "ViewAccrualHistoryReport",
+          "ViewTimeAttendanceReport",
+          "ViewTimeAttendanceGridReport",
+          "ViewTimesheetsReport",
+          "ViewTimesheetAssetsReport",
+          "ViewRosteringReport",
+          "ViewTimeAttendanceVarianceReport",
+          "ViewWorkRestrictionsReport",
+          "ViewTimeClockVarianceReport",
+          "ViewTimeClockStatusReport",
+          "ViewCompanyPayPoliciesReport",
+          "ViewPayItemsReport",
+          "ViewCompanyProjectReport",
+          "ViewProjectManagersReport",
+          "ViewProjectWorkOrdersReport",
+          "ViewCompanyRolesReport",
+          "ViewComapnyLocationsReport",
+          "ViewCompanyDepartmentsReport",
+          "ViewOrgChartReport",
+          "ViewAnnouncementsReport",
+          "ViewCompanyDocumentsReport",
+          "ViewAssetsReport",
+          "ViewStpEmployerReport",
+          "ViewProvisionPoliciesReport",
+          "ViewAuditReport",
+          "ViewUserRolePermissionsReport",
+          "ViewPayrollReport",
+          "ViewComparisonSummaryReport",
+          "ViewComparisonDetailReport",
+          "ViewPayItemTotalsReport",
+          "ViewLocationReconciliationReport",
+          "ViewDepartmentReconciliationReport",
+          "ViewRoleReconciliationReport",
+          "ViewProjectReconciliationReport",
+          "ViewLeaveTakenReport",
+          "ViewWarningsAndErrorsReport",
+          "ViewSuperannuationSummaryReport",
+          "ViewSuperannuationDetailReport",
+          "ViewPaygReport",
+          "ViewEmployeesByPayItemsReport",
+          "ViewPayMethodsSummaryReport",
+          "ViewEntitlementsReport",
+          "ViewGeneralLedgerReport",
+          "ViewFinancialYearSummaryReport",
+          "ViewAuditSummaryReport",
+          "ViewRosterByEmployeeReport",
+          "ViewRosterByRoleReport",
+          "ViewAllEoyReporting",
+          "ViewEoyPsSummaryReport",
+          "ViewEoyPsDetailReport",
+          "ViewEoyEtpsReport",
+          "ViewEoyFinancialYearSummaryReport",
+          "ViewEmployeeTeams",
+          "EditEmployeeTeams",
+          "ViewAllRosteringV3Report",
+          "ViewRosteringV3Report",
+          "ViewRosterCostsV3Report",
+          "ManageStpUpdateEvent",
+          "ManageImportExportPolicies",
+          "ViewAllAuditReporting",
+          "ViewEmployeeAuditReport",
+          "ViewEmployeeContactEmail",
+          "ViewEmployeeContactPhone",
+          "ViewEmployeeContactAddress",
+          "ViewEmployeeDateOfBirth",
+          "ViewEmployeeGender",
+          "DefinitivInternalActions"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Contracts.Auth.PermissionLevel": {
+        "enum": [
+          "ApplicationWide",
+          "LineManager",
+          "ProjectManager",
+          "Owner",
+          "ProjectClerk",
+          "TeamHierarchy"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.Auth.PermissionDto": {
+        "type": "object",
+        "properties": {
+          "permissionId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "permission": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Auth.PermissionAction"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "requiresTwoFactorAuthentication": {
+            "type": "boolean"
+          },
+          "applicableLevels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Auth.PermissionLevel"
+            },
+            "nullable": true
+          },
+          "overrideOrdering": {
+            "type": "boolean"
+          },
+          "insertAt": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Auth.AuthRoleDefaultMode": {
+        "enum": [
+          "None",
+          "DefaultForNewUsers",
+          "DefaultForTerminatedUsers"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.Auth.AuthRolePermissionDto": {
+        "type": "object",
+        "properties": {
+          "permission": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Auth.PermissionAction"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Auth.PermissionLevel"
+          },
+          "teamHierarchyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Auth.AuthRoleDto": {
+        "type": "object",
+        "properties": {
+          "authRoleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isDefaultForNewUsers": {
+            "type": "boolean"
+          },
+          "isDefaultForTerminatedUsers": {
+            "type": "boolean"
+          },
+          "authRoleDefaultMode": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Auth.AuthRoleDefaultMode"
+          },
+          "requiresTwoFactorAuthentication": {
+            "type": "boolean"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.AuthRolePermissionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UserDeviceDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "userDeviceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "deviceUniqueIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "deviceName": {
+            "type": "string",
+            "nullable": true
+          },
+          "notificationToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.DeleteResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Controllers.UserViewPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "viewName": {
+            "type": "string",
+            "description": "Gets or sets the name of the view. (important-comment)",
+            "nullable": true
+          },
+          "preferenceValue": {
+            "type": "boolean",
+            "description": "Gets or sets the user's preference value for the view. (important-comment)"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a user's view preference for a specific view. (important-comment)"
+      },
+      "Definitiv.Api.Controllers.SetUserViewPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "preferenceValue": {
+            "type": "boolean",
+            "description": "Gets or sets the preference value to set. Nullable to handle under-posting scenarios. (important-comment)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for setting a user's view preference. (important-comment)"
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<UserId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<AuthRoleId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<OrganizationId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UserRoleDto": {
+        "type": "object",
+        "properties": {
+          "authRole": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<AuthRoleId>"
+          },
+          "organization": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<OrganizationId>"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.EmployeeBasicInfoDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "employeeNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeFullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "profilePictureUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "orgCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.TwoFactorAuthenticationStatus": {
+        "enum": [
+          "NotRequired",
+          "Unregistered",
+          "Pending",
+          "Expired",
+          "Verified"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.UserDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newConfirmPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "currentPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "sendInvitationEmail": {
+            "type": "boolean"
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.UserRoleDto"
+            },
+            "nullable": true
+          },
+          "associatedEmployees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.EmployeeBasicInfoDto"
+            },
+            "nullable": true
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isLockedOut": {
+            "type": "boolean"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "isFederatedUser": {
+            "type": "boolean"
+          },
+          "twoFactorAuthenticationStatus": {
+            "$ref": "#/components/schemas/Definitiv.Api.Dtos.TwoFactorAuthenticationStatus"
+          },
+          "apiKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "migratedToWorkspace": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UpdatePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newConfirmPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "resetToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Controllers.BulkForgottenTwoFactorDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.BulkForgottenPasswordDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.BulkResendInvitesDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UserDetailsDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Auth.ApiKeyId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Domain.IdentityAccess.User": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "timeZone": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "apiKey": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Auth.ApiKeyId"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UserOrganizationAssociation": {
+        "type": "object",
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "organizationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationImageUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationFriendlyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeSupportEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "employeePrimaryRoleName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

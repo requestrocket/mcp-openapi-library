@@ -1,0 +1,1031 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Definitiv API - System",
+        "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://elmo-demo-05.definitiv.com.au",
+      "description": "Current Environment"
+    }
+  ],
+  "paths": {
+    "/api/auth-options/{username}": {
+      "get": {
+        "tags": [
+          "User - Authentication"
+        ],
+        "summary": "Get Authentication Options By user",
+        "description": "Gets authentication options by user.",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Contracts.Auth.UserAuthOptionsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/app-settings": {
+      "put": {
+        "tags": [
+          "App Settings"
+        ],
+        "summary": "Update App Settings",
+        "description": "Updates settings of the app",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.AppSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.AppSettingsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/user/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Update New User Password",
+        "description": "Updates a password for the new user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.UpdatePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.Registration.NewUserPasswordUpdateResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/user/2fa/generate-secret": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Generate Two-factor Secret Key",
+        "description": "Generates a new secret key for two-factor authentication",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "isNewUser",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.Registration.TwoFactorSecretDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/user/2fa/verify-code": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Verify Two-factor Authentication",
+        "description": "Verifies two-factor authentication",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Controllers.Verify2FaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/sso-configuration": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "Get SSO Configuration",
+        "description": "Gets SSO configuration details",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.SSO.SsoConfigurationDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "Update SSO Configuration",
+        "description": "Updates SSO configuration details",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.SSO.SsoConfigurationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Auth.SSO.SsoConfigurationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/webhook-subscriptions": {
+      "get": {
+        "tags": [
+          "Webhook Subscriptions"
+        ],
+        "summary": "Get Webhook Subscription",
+        "description": "Gets the last webhook subscription",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Webhooks.WebhookSubscriptionDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Webhook Subscriptions"
+        ],
+        "summary": "Update Webhook Subscription",
+        "description": "Updates a webhook subscription",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Webhooks.WebhookSubscriptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Webhooks.WebhookSubscriptionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/send-test": {
+      "get": {
+        "tags": [
+          "Webhook Test"
+        ],
+        "summary": "Get Test Event",
+        "description": "Gets test event",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Webhooks.Dtos.Events.TimesheetUpdatedEventDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Definitiv.Contracts.Auth.UserAuthOptionsDto": {
+        "type": "object",
+        "properties": {
+          "isFederatedUser": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.AppSettings.CustomUrlButtonLocations": {
+        "enum": [
+          "EmployeeRecords"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.AppSettingsDto": {
+        "type": "object",
+        "properties": {
+          "notificationsEnabled": {
+            "type": "boolean"
+          },
+          "passwordRequiredLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "passwordRequiresDigit": {
+            "type": "boolean"
+          },
+          "passwordRequiresLowercase": {
+            "type": "boolean"
+          },
+          "passwordRequiresUppercase": {
+            "type": "boolean"
+          },
+          "iBeaconId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "financialYearStart": {
+            "type": "string",
+            "nullable": true
+          },
+          "financialYearEnd": {
+            "type": "string",
+            "nullable": true
+          },
+          "sessionExpiryMinutes": {
+            "type": "number",
+            "format": "double"
+          },
+          "stpPhase2CommenceDate": {
+            "type": "string",
+            "description": "The date on which STP lodgements start being submitted in phase 2 format and submission in phase 1 format\r\nceases.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lineManagerVisibilityBufferAmount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "enableCustomUrlButton": {
+            "type": "boolean",
+            "description": "If true, the custom URL button will be displayed on specified pages."
+          },
+          "customUrlButtonLabel": {
+            "type": "string",
+            "description": "The label for the custom URL button.",
+            "nullable": true
+          },
+          "customUrlButtonUrl": {
+            "type": "string",
+            "description": "The URL that the custom URL button will link to.",
+            "nullable": true
+          },
+          "customUrlButtonLocation": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.AppSettings.CustomUrlButtonLocations"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.UpdatePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newConfirmPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "resetToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Auth.Registration.NewUserPasswordUpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "registerTwoFactor": {
+            "type": "boolean"
+          },
+          "twoFactorSecretGenerationToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Auth.Registration.TwoFactorSecretDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "nullable": true
+          },
+          "uri": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Controllers.Verify2FaDto": {
+        "required": [
+          "otpPassCode"
+        ],
+        "type": "object",
+        "properties": {
+          "otpPassCode": {
+            "pattern": "^\\d{6}$",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Auth.SSO.SsoConfigurationDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "serviceProviderFederationMetadataUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceProviderIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceProviderAcsUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "identityProviderFederationMetadataUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "signAssertion": {
+            "type": "boolean"
+          },
+          "encryptAssertion": {
+            "type": "boolean"
+          },
+          "sloEnabled": {
+            "type": "boolean"
+          },
+          "autoRedirectOnLogin": {
+            "type": "boolean"
+          },
+          "excludeEmailFilters": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "emailFilters": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseUri": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Payroll.PayItems.FilterType": {
+        "enum": [
+          "Include",
+          "Exclude"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Data.Webhooks.WebhookEventType": {
+        "enum": [
+          "TimeClockEventCreated",
+          "PayRunPublished",
+          "EmployeeCreated",
+          "EmployeeModified",
+          "TimesheetCreated",
+          "TimesheetUpdated",
+          "TimesheetDeleted",
+          "LeaveApplicationSubmitted",
+          "LeaveApplicationApproved",
+          "LeaveApplicationRejected",
+          "LeaveApplicationWithdrawn",
+          "LeaveApplicationUpdated",
+          "LeaveApplicationRecordedDuringPayRun",
+          "OrganizationChartUpdated",
+          "EmployeeDeleted",
+          "EmployeeTaxDetailsUpdated",
+          "EmployeeSuperDetailsUpdated",
+          "EmployeeBankDetailsUpdated"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.Webhooks.WebhookSubscriptionDto": {
+        "type": "object",
+        "properties": {
+          "webhookSubscriptionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "sinkUri": {
+            "type": "string",
+            "nullable": true
+          },
+          "secret": {
+            "type": "string",
+            "nullable": true
+          },
+          "sendFrom": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "instanceEnabled": {
+            "type": "boolean"
+          },
+          "regenerateSecret": {
+            "type": "boolean"
+          },
+          "filterMode": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Payroll.PayItems.FilterType"
+          },
+          "filteredEventTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Data.Webhooks.WebhookEventType"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<UserId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<EmployeeId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.TimeAttendance.TimesheetBreakDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "startTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "employeeSpecifiedStartTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "endTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "employeeSpecifiedEndTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "employeeSpecifiedDurationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.TimeAttendance.TimesheetTaskDto": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "taskName": {
+            "type": "string",
+            "nullable": true
+          },
+          "startTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "endTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.TimeAttendance.TimesheetWorkOrderTaskDto": {
+        "type": "object",
+        "properties": {
+          "taskName": {
+            "type": "string",
+            "nullable": true
+          },
+          "startTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "endTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.AssetIdentityDto": {
+        "type": "object",
+        "properties": {
+          "assetCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<UnitOfMeasureId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Assets.AssetMeasurementDto": {
+        "type": "object",
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.AssetIdentityDto"
+          },
+          "unitOfMeasure": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<UnitOfMeasureId>"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Workflow.ApprovalStatus": {
+        "enum": [
+          "NotSpecified",
+          "Draft",
+          "Pending",
+          "Approved",
+          "Rejected",
+          "Withdrawn",
+          "PartiallyApproved",
+          "Waiting",
+          "NotRequired",
+          "PayRunManualEditDraft",
+          "PayRunManualEditPublished",
+          "NotRequiredDueToPreviousRejection",
+          "DoNotShow"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.TimeAttendance.TimesheetApprovalDto": {
+        "type": "object",
+        "properties": {
+          "timesheetApprovalId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "approverEmployeeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "approverUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "approverName": {
+            "type": "string",
+            "nullable": true
+          },
+          "approverPosition": {
+            "type": "string",
+            "nullable": true
+          },
+          "approverPositionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isApproverPositionPrimary": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Workflow.ApprovalStatus"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "responseUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "responseUserDisplayName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<ProjectId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<DepartmentId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<LocationId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<ShiftTypeId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<ProjectWorkOrderId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Webhooks.Dtos.CostingDto": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<ProjectId>"
+          },
+          "department": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<DepartmentId>"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<LocationId>"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>"
+          },
+          "shiftType": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<ShiftTypeId>"
+          },
+          "projectWorkOrder": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<ProjectWorkOrderId>"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Webhooks.Dtos.Events.TimesheetUpdatedEventDto": {
+        "type": "object",
+        "properties": {
+          "timesheetId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "endTimeOfDay": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "submittingUser": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<UserId>"
+          },
+          "lastUpdatingUser": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<UserId>"
+          },
+          "lastUpdatedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employee": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<EmployeeId>"
+          },
+          "customFields": {
+            "nullable": true
+          },
+          "breaks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.TimeAttendance.TimesheetBreakDto"
+            },
+            "nullable": true
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.TimeAttendance.TimesheetTaskDto"
+            },
+            "nullable": true
+          },
+          "workOrderTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.TimeAttendance.TimesheetWorkOrderTaskDto"
+            },
+            "nullable": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Assets.AssetMeasurementDto"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvalLog": {
+            "type": "string",
+            "nullable": true
+          },
+          "adjustmentLog": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvalStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.TimeAttendance.TimesheetApprovalDto"
+            },
+            "nullable": true
+          },
+          "costing": {
+            "$ref": "#/components/schemas/Definitiv.Api.Webhooks.Dtos.CostingDto"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

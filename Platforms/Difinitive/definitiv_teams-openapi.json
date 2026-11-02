@@ -1,0 +1,1939 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Definitiv API - Teams / Org Chart",
+        "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://elmo-demo-05.definitiv.com.au",
+      "description": "Current Environment"
+    }
+  ],
+  "paths": {
+    "/api/employee/{employeeId}/teams": {
+      "get": {
+        "tags": [
+          "Employee Position Assignments"
+        ],
+        "summary": "Get Employee Position Assignment",
+        "description": "Gets all position assignments for the specified employee.",
+        "operationId": "GetAllEmployeeTeams",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "date-time",
+              "nullable": true
+            }
+          },
+          {
+            "name": "onlyApplicable",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "boolean",
+              "description": "",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Employees.PositionAssignmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employee/{employeeId}/teams/position-assignment/validate": {
+      "put": {
+        "tags": [
+          "Employee Position Assignments"
+        ],
+        "summary": "Update Employee Position Assignment",
+        "description": "Validates the proposed changes to the Employee Position Assignment",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Employees.PositionAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Employees.PositionAssignmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/employee/{employeeId}/teams/{positionEmployeeId}": {
+      "put": {
+        "tags": [
+          "Employee Position Assignments"
+        ],
+        "summary": "Update Employee Position Assignment",
+        "description": "Updates the specified position assignment for the specified employee.",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "positionEmployeeId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Employees.PositionAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Employees.PositionAssignmentDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/divisions": {
+      "get": {
+        "tags": [
+          "Divisions"
+        ],
+        "summary": "Get a list of all the Divisions",
+        "description": "Get a list of all the divisions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.DivisionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Divisions"
+        ],
+        "summary": "Create a Division",
+        "description": "Create a division",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.DivisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.DivisionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/employees": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Get Employees for Teams",
+        "description": "Get a list of employees available to Team Hierarchies",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "asOfDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Application.Common.Models.ListDto<HierarchyEmployeeReadDto>"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/roles": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Get Roles for Teams",
+        "description": "Get a list of roles available to Team Hierarchies",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Application.Common.Models.ListDto<RoleIdentityDto>"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Get a list of Team Hierarchies",
+        "description": "Get a list of Team Hierarchies",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "structureType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Teams.TeamStructureType"
+            }
+          },
+          {
+            "name": "showOnlyActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Application.Common.Models.ListDto<HierarchyDto>"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Create a Hierarchy",
+        "description": "Creates a new hierarchy",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/company/{orgId}/team-hierarchies/position-incumbent-summary": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Gets a Team Hierarchy structure",
+        "description": "Get a Team Hierarchies in a Tree Structure",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.Hierarchy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/default": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Get the Org Chart Hierarchy",
+        "description": "Gets the Org Chart Hierarchy",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/{teamHierarchyId}": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Get a list of Team Hierarchies",
+        "description": "Gets the specfied hierarchy",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Updates a Team Hierarchy",
+        "description": "Updates basic Hierarchy information",
+        "parameters": [
+          {
+            "name": "teamHierarchyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/{id}/structure": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Gets a Team Hierarchy",
+        "description": "Get a Team Hierarchy in a flat structure",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyStructureDto<HierarchyEmployeeReadDto>"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Updates a Team Hierarchy's structure",
+        "description": "Updates a Team Hierarchy via the flat structure",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyStructureDto<HierarchyEmployeeWriteDto>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/organizations/{orgId}/team-hierarchies/{id}/structure-compact": {
+      "get": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Gets a Team Hierarchy",
+        "description": "Get a Team Hierarchy in a compact structure",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyStructureCompactDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Hierarchies"
+        ],
+        "summary": "Updates a Team Hierarchy's structure from a compact payload",
+        "description": "Updates a Team Hierarchy via the compact structure",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyStructureCompactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/teams/positions": {
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Get all positions",
+        "description": "Get all Positions",
+        "parameters": [
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Optionally filter the list of positions returned (using naive string matching)",
+            "schema": {
+              "type": "string",
+              "description": "Optionally filter the list of positions returned (using naive string matching)",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "description": "Get the positions for a specific Team Hierarchy; leave blank for the Org Chart",
+            "schema": {
+              "type": "string",
+              "description": "Get the positions for a specific Team Hierarchy; leave blank for the Org Chart",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "asOfDate",
+            "in": "query",
+            "description": "Defaults to today",
+            "schema": {
+              "type": "string",
+              "description": "Defaults to today",
+              "format": "date-time",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Application.Common.Models.ListDto<HierarchyPositionDto<IdentityDto<EmployeeId>>>"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Create a new position",
+        "description": "Create a new Position",
+        "parameters": [
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "description": "The Team Hierarchy to create it in; leave blank for Org Chart",
+            "schema": {
+              "type": "string",
+              "description": "The Team Hierarchy to create it in; leave blank for Org Chart",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The new Position",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeWriteDto>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeReadDto>"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/positions/{positionId}": {
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Get a position",
+        "description": "Get a Position",
+        "parameters": [
+          {
+            "name": "positionId",
+            "in": "path",
+            "description": "The position to get",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The position to get",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "description": "The hierarchy the position is in; leave blank for Org Chart",
+            "schema": {
+              "type": "string",
+              "description": "The hierarchy the position is in; leave blank for Org Chart",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeReadDto>"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Update an existing position",
+        "description": "Update an existing position",
+        "parameters": [
+          {
+            "name": "positionId",
+            "in": "path",
+            "description": "The updated Position",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The updated Position",
+              "format": "uuid",
+              "nullable": true
+            }
+          },
+          {
+            "name": "teamHierarchyId",
+            "in": "query",
+            "description": "The Team Hierarchy to update it in; leave blank for Org Chart",
+            "schema": {
+              "type": "string",
+              "description": "The Team Hierarchy to update it in; leave blank for Org Chart",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The updated details of the Position",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeWriteDto>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeReadDto>"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Definitiv.Api.Dtos.Employees.PositionAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "positionEmployeeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "positionName": {
+            "type": "string",
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "positionCommencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "positionCeaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "teamHierarchyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "teamName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.DivisionDto": {
+        "type": "object",
+        "properties": {
+          "divisionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.EmployeeRoleAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.EmployeePositionAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "positionEmployeeAssignmentId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "positionCommencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "positionCeaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "teamHierarchyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "positionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionName": {
+            "type": "string",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.EmploymentRecordsDtos": {
+        "type": "object",
+        "properties": {
+          "hireDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "terminationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyEmployeeReadDto": {
+        "type": "object",
+        "properties": {
+          "employeeNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationShortCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "roleAssignments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmployeeRoleAssignmentDto"
+            },
+            "nullable": true
+          },
+          "positionAssignmentsDto": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmployeePositionAssignmentDto"
+            },
+            "nullable": true
+          },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "employmentRecords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmploymentRecordsDtos"
+            },
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Only used in validation in the write dto",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "description": "Only used in validation in the write dto",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Application.Common.Models.ListDto<HierarchyEmployeeReadDto>": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyEmployeeReadDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.RoleIdentityDto": {
+        "type": "object",
+        "properties": {
+          "organizationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationShortCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Application.Common.Models.ListDto<RoleIdentityDto>": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.RoleIdentityDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Teams.TeamStructureType": {
+        "enum": [
+          "OrganizationChart",
+          "TeamHierarchy",
+          "All"
+        ],
+        "type": "string"
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyDto": {
+        "type": "object",
+        "properties": {
+          "hierarchyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOrganizationChart": {
+            "type": "boolean"
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Application.Common.Models.ListDto<HierarchyDto>": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IncumbentSummary": {
+        "type": "object",
+        "properties": {
+          "isTerminated": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.PositionHierarchy": {
+        "type": "object",
+        "properties": {
+          "positionCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subPositions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.PositionHierarchy"
+            },
+            "nullable": true
+          },
+          "incumbents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IncumbentSummary"
+            },
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.Hierarchy": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.PositionHierarchy"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<DivisionId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeReadDto>": {
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "glCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "divisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<DivisionId>"
+            },
+            "nullable": true
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyEmployeeReadDto"
+            },
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isManager": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>"
+            },
+            "nullable": true
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefaultApprover": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.TeamDto": {
+        "type": "object",
+        "properties": {
+          "glCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyStructureDto<HierarchyEmployeeReadDto>": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeReadDto>"
+            },
+            "nullable": true
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.TeamDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyEmployeeWriteDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "Only used in validation in the write dto",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "description": "Only used in validation in the write dto",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeWriteDto>": {
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "glCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "divisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<DivisionId>"
+            },
+            "nullable": true
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyEmployeeWriteDto"
+            },
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isManager": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>"
+            },
+            "nullable": true
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefaultApprover": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyStructureDto<HierarchyEmployeeWriteDto>": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<HierarchyEmployeeWriteDto>"
+            },
+            "nullable": true
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.TeamDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.EmployeeAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.PositionDto": {
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "glCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "divisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<DivisionId>"
+            },
+            "nullable": true
+          },
+          "employeeAssignments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmployeeAssignmentDto"
+            },
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isManager": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>"
+            },
+            "nullable": true
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefaultApprover": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.CompactEmployeeRoleAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.EmployeeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
+          "organizationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationShortCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "roleAssignments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.CompactEmployeeRoleAssignmentDto"
+            },
+            "nullable": true
+          },
+          "positionAssignmentsDto": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmployeePositionAssignmentDto"
+            },
+            "nullable": true
+          },
+          "employmentRecords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmploymentRecordsDtos"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyStructureCompactDto": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.PositionDto"
+            },
+            "nullable": true
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.TeamDto"
+            },
+            "nullable": true
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.EmployeeDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Contracts.Common.Identities.IdentityDto<EmployeeId>": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Api.Dtos.Teams.HierarchyPositionDto<IdentityDto<EmployeeId>>": {
+        "type": "object",
+        "properties": {
+          "positionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "glCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exportCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "divisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<DivisionId>"
+            },
+            "nullable": true
+          },
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<EmployeeId>"
+            },
+            "nullable": true
+          },
+          "commencementDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ceaseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isManager": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Contracts.Common.Identities.IdentityDto<RoleId>"
+            },
+            "nullable": true
+          },
+          "teamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDefaultApprover": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Definitiv.Application.Common.Models.ListDto<HierarchyPositionDto<IdentityDto<EmployeeId>>>": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Definitiv.Api.Dtos.Teams.HierarchyPositionDto<IdentityDto<EmployeeId>>"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
